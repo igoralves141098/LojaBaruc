@@ -1,0 +1,77 @@
+import { Search, ShoppingBag, X } from 'lucide-react'
+import { BarucLogo } from '@/components/ui/BarucLogo'
+import { useCart } from '@/features/cart/hooks/useCart'
+
+interface HeaderProps {
+  searchQuery: string
+  onSearchChange: (query: string) => void
+}
+
+export const Header = ({ searchQuery, onSearchChange }: HeaderProps) => {
+  const { totalItems, openCart } = useCart()
+  const badgeLabel = totalItems > 99 ? '99+' : String(totalItems)
+
+  return (
+    <header className="sticky top-0 z-30 border-b border-baruc-gold/25 bg-baruc-green text-white shadow-md">
+      <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto] items-center gap-x-3 gap-y-3 px-4 py-3 sm:px-6 md:grid-cols-[auto_1fr_auto] md:gap-x-8 lg:px-8">
+        <a
+          href="/"
+          className="justify-self-start rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
+        >
+          <BarucLogo />
+        </a>
+
+        <div className="relative col-span-2 row-start-2 w-full md:col-span-1 md:row-start-1 md:mx-auto md:max-w-xl">
+          <label htmlFor="catalog-search" className="sr-only">
+            Buscar produtos
+          </label>
+          <Search
+            className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-baruc-gold/80"
+            aria-hidden="true"
+          />
+          <input
+            id="catalog-search"
+            type="search"
+            inputMode="search"
+            enterKeyHint="search"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
+            placeholder="Buscar camisas, calçados, perfumes..."
+            value={searchQuery}
+            onChange={(event) => onSearchChange(event.target.value)}
+            className="h-11 w-full appearance-none rounded-xl border border-baruc-gold/30 bg-baruc-greenDark/90 pl-11 pr-11 text-base text-white placeholder:text-neutral-300 transition-colors focus:border-baruc-gold focus:outline-none focus:ring-2 focus:ring-baruc-gold/25"
+          />
+          {searchQuery.length > 0 && (
+            <button
+              type="button"
+              onClick={() => onSearchChange('')}
+              aria-label="Limpar busca"
+              className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-neutral-300 transition-colors hover:text-baruc-gold active:scale-95"
+            >
+              <X className="h-5 w-5" aria-hidden="true" />
+            </button>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={openCart}
+          aria-label={`Abrir carrinho com ${totalItems} ${totalItems === 1 ? 'item' : 'itens'}`}
+          className="relative inline-flex min-h-[44px] items-center gap-2 justify-self-end rounded-xl border border-baruc-gold/50 bg-baruc-greenLight/60 px-3.5 text-sm font-semibold text-baruc-gold transition-colors hover:bg-baruc-gold hover:text-baruc-green active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold focus-visible:ring-offset-2 focus-visible:ring-offset-baruc-green sm:px-4"
+        >
+          <ShoppingBag className="h-5 w-5" aria-hidden="true" />
+          <span className="hidden sm:inline">Carrinho</span>
+          {totalItems > 0 && (
+            <span
+              aria-hidden="true"
+              className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-baruc-green bg-baruc-gold px-1.5 text-xs font-bold text-baruc-green"
+            >
+              {badgeLabel}
+            </span>
+          )}
+        </button>
+      </div>
+    </header>
+  )
+}
