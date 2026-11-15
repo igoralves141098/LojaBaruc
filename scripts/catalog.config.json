@@ -1,11 +1,11 @@
 {
-  "$comment": "Edite nome, nicho, preço (null = Sob consulta), cores e tamanhos por pasta de ./Produtos. Use \"items\" para sobrescrever por arquivo (ex.: { \"foto.jpg\": { \"color\": \"Preto\" } }).",
+  "$comment": "Edite nome, nicho, cores e tamanhos por pasta de ./Produtos. Os preços oficiais são aplicados automaticamente pelo script. Use \"items\" para sobrescrever por arquivo (ex.: { \"foto.jpg\": { \"color\": \"Preto\" } }).",
   "groups": {
     "Camisa Basica Texturizada": {
       "name": "Camisa Basica Texturizada",
       "niche": "Camisas",
       "description": "Camisa Basica Texturizada BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
-      "price": null,
+      "price": 89.99,
       "originalPrice": null,
       "colors": [],
       "sizes": [
@@ -21,7 +21,7 @@
       "name": "Camisa Basica Algodão",
       "niche": "Camisas",
       "description": "Camisa Basica Algodão BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
-      "price": null,
+      "price": 79.99,
       "originalPrice": null,
       "colors": [],
       "sizes": [
@@ -37,7 +37,7 @@
       "name": "Camisa Gola V",
       "niche": "Camisas",
       "description": "Camisa Gola V BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
-      "price": null,
+      "price": 89.99,
       "originalPrice": null,
       "colors": [],
       "sizes": [
@@ -53,7 +53,7 @@
       "name": "Camisa Linho Social",
       "niche": "Camisas",
       "description": "Camisa Linho Social BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
-      "price": null,
+      "price": 134.99,
       "originalPrice": null,
       "colors": [],
       "sizes": [
@@ -69,7 +69,7 @@
       "name": "Camisa Polo",
       "niche": "Camisas",
       "description": "Camisa Polo BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
-      "price": null,
+      "price": 94.99,
       "originalPrice": null,
       "colors": [],
       "sizes": [
@@ -85,7 +85,7 @@
       "name": "Camisa Polo ziper",
       "niche": "Camisas",
       "description": "Camisa Polo ziper BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
-      "price": null,
+      "price": 109.99,
       "originalPrice": null,
       "colors": [],
       "sizes": [
@@ -101,7 +101,7 @@
       "name": "Camisa Polo ziper Metalico",
       "niche": "Camisas",
       "description": "Camisa Polo ziper Metalico BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
-      "price": null,
+      "price": 134.99,
       "originalPrice": null,
       "colors": [],
       "sizes": [
@@ -117,7 +117,7 @@
       "name": "Camisa Regata",
       "niche": "Camisas",
       "description": "Camisa Regata BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
-      "price": null,
+      "price": 69.99,
       "originalPrice": null,
       "colors": [],
       "sizes": [
@@ -133,7 +133,7 @@
       "name": "Camisa Texturizada Brisa",
       "niche": "Camisas",
       "description": "Camisa Texturizada Brisa BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
-      "price": null,
+      "price": 118.99,
       "originalPrice": null,
       "colors": [],
       "sizes": [
@@ -149,7 +149,7 @@
       "name": "Jaqueta",
       "niche": "Jaqueta",
       "description": "Jaqueta BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
-      "price": null,
+      "price": 299.99,
       "originalPrice": null,
       "colors": [],
       "sizes": [
@@ -165,7 +165,7 @@
       "name": "Short Flex",
       "niche": "Shorts",
       "description": "Short Flex BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
-      "price": null,
+      "price": 69.99,
       "originalPrice": null,
       "colors": [],
       "sizes": [
@@ -181,7 +181,7 @@
       "name": "Short Linho",
       "niche": "Shorts",
       "description": "Short Linho BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
-      "price": null,
+      "price": 79.99,
       "originalPrice": null,
       "colors": [],
       "sizes": [
@@ -197,7 +197,7 @@
       "name": "Short Sarja",
       "niche": "Shorts",
       "description": "Short Sarja BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
-      "price": null,
+      "price": 79.99,
       "originalPrice": null,
       "colors": [],
       "sizes": [
@@ -213,7 +213,7 @@
       "name": "Suéter",
       "niche": "Suéter",
       "description": "Suéter BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
-      "price": null,
+      "price": 109.99,
       "originalPrice": null,
       "colors": [],
       "sizes": [

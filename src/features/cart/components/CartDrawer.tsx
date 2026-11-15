@@ -319,7 +319,7 @@ export const CartDrawer = () => {
               </dl>
               {hasPriceOnRequest && (
                 <p className="mt-2 text-xs text-neutral-500">
-                  Itens sob consulta: o valor final será confirmado pelo WhatsApp.
+                  Itens a confirmar: o valor final será confirmado pelo WhatsApp.
                 </p>
               )}
 

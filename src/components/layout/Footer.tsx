@@ -1,6 +1,7 @@
-import { Clock, Mail, MapPin, MessageCircle } from 'lucide-react'
+﻿import { Clock, Mail, MapPin, MessageCircle, Phone, Truck } from 'lucide-react'
 import { BarucLogo } from '@/components/ui/BarucLogo'
-import { env } from '@/config/env'
+import { InstagramIcon } from '@/components/ui/InstagramIcon'
+import { env, STORE_INSTAGRAM_HANDLE, STORE_INSTAGRAM_URL } from '@/config/env'
 import { EmailService } from '@/services/email.service'
 import { WhatsAppService } from '@/services/whatsapp.service'
 
@@ -26,13 +27,37 @@ export const Footer = () => {
           </p>
           <p className="flex items-start gap-2 text-sm text-neutral-300">
             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-baruc-gold" aria-hidden="true" />
-            Entregas na região e retirada na loja
+            Retirada na loja
+          </p>
+          <p className="flex items-start gap-2 text-sm font-semibold text-baruc-gold">
+            <Truck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            Envio para todo o Brasil
           </p>
         </div>
 
         <div className="flex flex-col gap-3 md:items-end md:text-right">
           <h2 className="font-serif text-xl font-semibold tracking-wide text-baruc-gold">Atendimento</h2>
           <p className="text-sm text-neutral-300">Dúvidas sobre tamanhos, trocas ou pagamentos?</p>
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-neutral-300 md:justify-end">
+            <a
+              href={STORE_INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 transition-colors hover:text-baruc-gold focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
+            >
+              <InstagramIcon className="h-4 w-4 text-baruc-gold" aria-hidden="true" />
+              {STORE_INSTAGRAM_HANDLE}
+            </a>
+            <a
+              href={WhatsAppService.generateGeneralUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 transition-colors hover:text-baruc-gold focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
+            >
+              <Phone className="h-4 w-4 text-baruc-gold" aria-hidden="true" />
+              83-99909-1885
+            </a>
+          </div>
           <div className="flex flex-wrap gap-2 md:justify-end">
             <a
               href={WhatsAppService.generateGeneralUrl()}
@@ -62,3 +87,4 @@ export const Footer = () => {
     </footer>
   )
 }
+

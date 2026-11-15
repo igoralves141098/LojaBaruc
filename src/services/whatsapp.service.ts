@@ -4,6 +4,7 @@ import type { Product } from '@/features/catalog/types/product.types'
 import { formatCurrency, formatPrice } from '@/utils/formatters'
 
 const WHATSAPP_BASE_URL = 'https://wa.me'
+const DEFAULT_WHATSAPP_PHONE = '5583999091885'
 const DIVIDER = '------------------------------'
 
 export interface CartCheckoutParams {
@@ -18,7 +19,7 @@ export interface CartCheckoutParams {
 }
 
 const buildUrl = (message: string): string =>
-  `${WHATSAPP_BASE_URL}/${env.whatsappPhone}?text=${encodeURIComponent(message)}`
+  `${WHATSAPP_BASE_URL}/${env.whatsappPhone || DEFAULT_WHATSAPP_PHONE}?text=${encodeURIComponent(message)}`
 
 const clean = (value: string | undefined): string => (value ?? '').replace(/\s+/g, ' ').trim()
 
@@ -64,9 +65,9 @@ const buildCheckoutMessage = ({
   }
 
   if (hasPriceOnRequest && totalPrice === 0) {
-    lines.push('*VALOR TOTAL: SOB CONSULTA*', 'Aguardo o orçamento das peças selecionadas.')
+    lines.push('*VALOR TOTAL A CONFIRMAR*', 'Aguardo o orçamento das peças selecionadas.')
   } else if (hasPriceOnRequest) {
-    lines.push(`*VALOR DOS ITENS COM PREÇO: ${formatCurrency(totalPrice)}*`, 'Itens sob consulta: aguardo o orçamento.')
+    lines.push(`*VALOR DOS ITENS COM PREÇO: ${formatCurrency(totalPrice)}*`, 'Itens a confirmar: aguardo o orçamento.')
   } else {
     lines.push(`*VALOR TOTAL DO PEDIDO: ${formatCurrency(totalPrice)}*`)
   }

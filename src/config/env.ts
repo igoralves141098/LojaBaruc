@@ -1,6 +1,9 @@
-const DEFAULT_WHATSAPP_PHONE = '5583999999999'
+const DEFAULT_WHATSAPP_PHONE = '5583999091885'
 const DEFAULT_STORE_NAME = 'BARUC - Loja Masculina'
 const DEFAULT_CONTACT_EMAIL = 'contato@baruc.com.br'
+
+export const STORE_INSTAGRAM_HANDLE = '@baruc_lojamf'
+export const STORE_INSTAGRAM_URL = 'https://www.instagram.com/baruc_lojamf/'
 
 const sanitizePhone = (raw: string | undefined): string => {
   const digits = (raw ?? '').replace(/\D/g, '')

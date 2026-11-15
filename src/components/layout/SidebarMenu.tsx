@@ -1,7 +1,8 @@
-import { useEffect, useId, useRef } from 'react'
-import { ChevronRight, Home, Layers, Mail, MessageCircle, X } from 'lucide-react'
+﻿import { useEffect, useId, useRef } from 'react'
+import { ChevronRight, Home, Layers, Mail, MessageCircle, Phone, Truck, X } from 'lucide-react'
 import { BarucLogo } from '@/components/ui/BarucLogo'
-import { env } from '@/config/env'
+import { InstagramIcon } from '@/components/ui/InstagramIcon'
+import { env, STORE_INSTAGRAM_HANDLE, STORE_INSTAGRAM_URL } from '@/config/env'
 import {
   ALL_CATEGORIES,
   ALL_PRODUCTS_TAB,
@@ -196,6 +197,30 @@ export const SidebarMenu = ({
         </nav>
 
         <footer className="flex flex-col gap-2 border-t border-baruc-gold/30 bg-white px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
+          <div className="mb-1 flex flex-col gap-1.5 rounded-xl bg-baruc-cream px-3 py-2.5 text-xs text-neutral-700">
+            <a
+              href={STORE_INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 font-medium transition-colors hover:text-baruc-goldDark focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
+            >
+              <InstagramIcon className="h-4 w-4 text-baruc-goldDark" aria-hidden="true" />
+              {STORE_INSTAGRAM_HANDLE}
+            </a>
+            <a
+              href={WhatsAppService.generateGeneralUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 font-medium transition-colors hover:text-baruc-goldDark focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
+            >
+              <Phone className="h-4 w-4 text-baruc-goldDark" aria-hidden="true" />
+              83-99909-1885
+            </a>
+            <span className="inline-flex items-center gap-2 font-semibold text-baruc-green">
+              <Truck className="h-4 w-4 text-baruc-goldDark" aria-hidden="true" />
+              Envio para todo o Brasil
+            </span>
+          </div>
           <a
             href={WhatsAppService.generateGeneralUrl()}
             target="_blank"
@@ -217,3 +242,4 @@ export const SidebarMenu = ({
     </div>
   )
 }
+

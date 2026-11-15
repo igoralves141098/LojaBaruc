@@ -12,6 +12,24 @@ const PUBLIC_IMAGES_URL = 'produtos'
 
 const OFFICIAL_SIZES = ['P', 'M', 'G', 'GG']
 const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif'])
+const INFO_FILE_NAME = 'info.txt'
+
+const OFFICIAL_PRICES = [
+  { match: 'camisas polo ziper metalico', price: 134.99 },
+  { match: 'camisas polo ziper', price: 109.99 },
+  { match: 'camisas polo', price: 94.99 },
+  { match: 'camisa basica texturizada', price: 89.99 },
+  { match: 'camisas basica algodao', price: 79.99 },
+  { match: 'camisas gola v', price: 89.99 },
+  { match: 'camisas linho social', price: 134.99 },
+  { match: 'camisas regata', price: 69.99 },
+  { match: 'camisas texturizada brisa', price: 118.99 },
+  { match: 'jaqueta', price: 299.99 },
+  { match: 'short flex', price: 69.99 },
+  { match: 'short linho', price: 79.99 },
+  { match: 'short sarja', price: 79.99 },
+  { match: 'sueter', price: 109.99 },
+]
 
 const log = (message) => console.log(`[sync-products] ${message}`)
 const warn = (message) => console.warn(`[sync-products] AVISO: ${message}`)
@@ -25,6 +43,17 @@ const slugify = (value) =>
     .replace(/^-+|-+$/g, '')
 
 const naturalCompare = (a, b) => a.localeCompare(b, 'pt-BR', { numeric: true, sensitivity: 'base' })
+
+const normalizeMatch = (value) => stripAccents(value).toLowerCase().replace(/\s+/g, ' ').trim()
+
+const getOfficialPrice = (folderName) => {
+  const normalized = normalizeMatch(folderName)
+  const entry = OFFICIAL_PRICES.find(({ match }) => normalized.includes(match))
+  return entry ? entry.price : null
+}
+
+const buildInfoContent = (folderName, price) =>
+  `NOME: ${folderName}\nPRECO: ${price.toFixed(2).replace('.', ',')}\n`
 
 const singularize = (folderName) => folderName.replace(/^Camisas\b/i, 'Camisa')
 
@@ -58,7 +87,7 @@ const createGroupDefaults = (folderName) => {
     name,
     niche: inferNiche(folderName),
     description: `${name} BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.`,
-    price: null,
+    price: getOfficialPrice(folderName),
     originalPrice: null,
     colors: [],
     sizes: [...OFFICIAL_SIZES],
@@ -145,6 +174,24 @@ const main = async () => {
     }
   }
 
+  for (const folderName of folders) {
+    const officialPrice = getOfficialPrice(folderName)
+    if (officialPrice === null) {
+      warn(`sem preço oficial definido para "${folderName}".`)
+      continue
+    }
+
+    const group = groups[folderName] ?? createGroupDefaults(folderName)
+    if (group.price !== officialPrice) configChanged = true
+    groups[folderName] = { ...group, price: officialPrice }
+
+    await writeFile(
+      path.join(SOURCE_DIR, folderName, INFO_FILE_NAME),
+      buildInfoContent(folderName, officialPrice),
+      'utf8',
+    )
+  }
+
   const orderedFolders = Object.keys(groups).filter((folderName) => folderSet.has(folderName))
   const products = []
   const keepFiles = new Set()
@@ -185,7 +232,8 @@ const main = async () => {
 
       const item = overrides[fileName] ?? {}
       const itemColors = typeof item.color === 'string' && item.color.trim() ? [item.color.trim()] : toStringList(item.colors)
-      const price = isPositiveNumber(item.price) ? item.price : isPositiveNumber(group.price) ? group.price : null
+      const officialPrice = getOfficialPrice(folderName)
+      const price = officialPrice ?? (isPositiveNumber(item.price) ? item.price : isPositiveNumber(group.price) ? group.price : null)
       const originalPrice = isPositiveNumber(item.originalPrice)
         ? item.originalPrice
         : isPositiveNumber(group.originalPrice)
@@ -224,7 +272,7 @@ const main = async () => {
   if (configChanged || !existsSync(CONFIG_PATH)) {
     const nextConfig = {
       $comment:
-        'Edite nome, nicho, preço (null = Sob consulta), cores e tamanhos por pasta de ./Produtos. Use "items" para sobrescrever por arquivo (ex.: { "foto.jpg": { "color": "Preto" } }).',
+        'Edite nome, nicho, cores e tamanhos por pasta de ./Produtos. Os preços oficiais são aplicados automaticamente pelo script. Use "items" para sobrescrever por arquivo (ex.: { "foto.jpg": { "color": "Preto" } }).',
       ...config,
       groups,
     }

@@ -3,7 +3,7 @@ import { Check, MessageCircle, ShoppingBag } from 'lucide-react'
 import { useCart } from '@/features/cart/hooks/useCart'
 import type { Product } from '@/features/catalog/types/product.types'
 import { WhatsAppService } from '@/services/whatsapp.service'
-import { calculateDiscountPercent, formatCurrency, formatPrice } from '@/utils/formatters'
+import { calculateDiscountPercent, formatCurrency } from '@/utils/formatters'
 
 interface ProductCardProps {
   product: Product
@@ -89,8 +89,8 @@ const ProductCardComponent = ({ product }: ProductCardProps) => {
         </div>
 
         <div className="flex items-baseline gap-2">
-          <span className={`font-bold ${product.price === null ? 'text-base text-baruc-goldDark' : 'text-xl text-neutral-900'}`}>
-            {formatPrice(product.price)}
+          <span className="text-xl font-bold text-neutral-900">
+            {formatCurrency(product.price ?? 0)}
           </span>
           {product.originalPrice !== undefined && discount !== null && (
             <span className="text-sm text-neutral-400 line-through">{formatCurrency(product.originalPrice)}</span>
