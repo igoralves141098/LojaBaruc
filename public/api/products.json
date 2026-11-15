@@ -1,101 +1,1237 @@
 [
   {
-    "id": "brc-001",
-    "sku": "BRC-CAM-001",
-    "name": "Camiseta Essential Algodão Pima",
-    "description": "Camiseta em algodão pima peruano de toque sedoso, gola reforçada e caimento regular. A base perfeita do guarda-roupa masculino.",
-    "price": 119.9,
-    "originalPrice": 149.9,
-    "imageUrl": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80",
-    "category": "Camisetas",
-    "sizes": ["P", "M", "G", "GG"],
-    "inStock": true,
-    "badge": "MAIS VENDIDO"
-  },
-  {
-    "id": "brc-002",
-    "sku": "BRC-CMS-002",
-    "name": "Camisa Linho Puro Havana",
-    "description": "Camisa 100% linho com respirabilidade superior, botões em madrepérola e modelagem slim. Elegância leve para dias quentes.",
-    "price": 229.9,
-    "originalPrice": 269.9,
-    "imageUrl": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=800&q=80",
-    "category": "Camisas",
-    "sizes": ["P", "M", "G", "GG"],
-    "inStock": true,
-    "badge": "NOVO"
-  },
-  {
-    "id": "brc-003",
-    "sku": "BRC-CAS-003",
-    "name": "Jaqueta de Couro Classic Black",
-    "description": "Jaqueta em couro legítimo com forro acetinado, zíperes metálicos e acabamento artesanal. Atitude atemporal.",
-    "price": 649.9,
-    "imageUrl": "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=800&q=80",
-    "category": "Casacos",
-    "sizes": ["M", "G", "GG"],
-    "inStock": true,
-    "badge": "EXCLUSIVO"
-  },
-  {
-    "id": "brc-004",
-    "sku": "BRC-CAL-004",
-    "name": "Calça Chino Alfaiataria Slim",
-    "description": "Calça chino em sarja com elastano, cós de alfaiataria e corte slim. Versátil do escritório ao happy hour.",
-    "price": 259.9,
-    "originalPrice": 299.9,
-    "imageUrl": "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=800&q=80",
-    "category": "Calças",
-    "sizes": ["38", "40", "42", "44"],
+    "id": "camisa-basica-texturizada-01",
+    "sku": "BRC-CBT-01",
+    "name": "Camisa Basica Texturizada 01",
+    "description": "Camisa Basica Texturizada BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisa-basica-texturizada/camisa-basica-texturizada-01.jpg",
+    "category": "Camisa Basica Texturizada",
+    "categorySlug": "camisa-basica-texturizada",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
     "inStock": true
   },
   {
-    "id": "brc-005",
-    "sku": "BRC-CAM-005",
-    "name": "Polo Tricot Imperial Verde Baruc",
-    "description": "Polo em tricot de fio egípcio na cor assinatura da casa, com gola estruturada e punhos canelados.",
-    "price": 179.9,
-    "imageUrl": "https://images.unsplash.com/photo-1586363104862-3a5e2ab60d99?auto=format&fit=crop&w=800&q=80",
-    "category": "Camisetas",
-    "sizes": ["P", "M", "G"],
-    "inStock": true,
-    "badge": "DESTAQUE"
+    "id": "camisa-basica-texturizada-02",
+    "sku": "BRC-CBT-02",
+    "name": "Camisa Basica Texturizada 02",
+    "description": "Camisa Basica Texturizada BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisa-basica-texturizada/camisa-basica-texturizada-02.jpg",
+    "category": "Camisa Basica Texturizada",
+    "categorySlug": "camisa-basica-texturizada",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
   },
   {
-    "id": "brc-006",
-    "sku": "BRC-CLC-006",
-    "name": "Sapato Loafer Camurça Café",
-    "description": "Loafer em camurça legítima com palmilha acolchoada e solado de couro. Sofisticação descomplicada.",
-    "price": 389.9,
-    "originalPrice": 449.9,
-    "imageUrl": "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=800&q=80",
-    "category": "Calçados",
-    "sizes": ["39", "40", "41", "42"],
-    "inStock": true,
-    "badge": "OFERTA"
+    "id": "camisa-basica-texturizada-03",
+    "sku": "BRC-CBT-03",
+    "name": "Camisa Basica Texturizada 03",
+    "description": "Camisa Basica Texturizada BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisa-basica-texturizada/camisa-basica-texturizada-03.jpg",
+    "category": "Camisa Basica Texturizada",
+    "categorySlug": "camisa-basica-texturizada",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
   },
   {
-    "id": "brc-007",
-    "sku": "BRC-CLC-007",
-    "name": "Tênis Urban Leather White",
-    "description": "Tênis minimalista em couro branco com solado emborrachado costurado. Combina com tudo.",
-    "price": 379.9,
-    "imageUrl": "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80",
-    "category": "Calçados",
-    "sizes": ["39", "40", "41", "42"],
-    "inStock": false
+    "id": "camisa-basica-texturizada-04",
+    "sku": "BRC-CBT-04",
+    "name": "Camisa Basica Texturizada 04",
+    "description": "Camisa Basica Texturizada BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisa-basica-texturizada/camisa-basica-texturizada-04.jpg",
+    "category": "Camisa Basica Texturizada",
+    "categorySlug": "camisa-basica-texturizada",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
   },
   {
-    "id": "brc-008",
-    "sku": "BRC-ACS-008",
-    "name": "Perfume Baruc Woody Intense 100ml",
-    "description": "Eau de Parfum amadeirado com notas de vetiver, couro e âmbar. Alta fixação e assinatura marcante.",
-    "price": 289.9,
-    "originalPrice": 339.9,
-    "imageUrl": "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=800&q=80",
-    "category": "Acessórios",
-    "sizes": ["Único"],
-    "inStock": true,
-    "badge": "MAIS VENDIDO"
+    "id": "camisa-basica-texturizada-05",
+    "sku": "BRC-CBT-05",
+    "name": "Camisa Basica Texturizada 05",
+    "description": "Camisa Basica Texturizada BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisa-basica-texturizada/camisa-basica-texturizada-05.jpg",
+    "category": "Camisa Basica Texturizada",
+    "categorySlug": "camisa-basica-texturizada",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisa-basica-texturizada-06",
+    "sku": "BRC-CBT-06",
+    "name": "Camisa Basica Texturizada 06",
+    "description": "Camisa Basica Texturizada BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisa-basica-texturizada/camisa-basica-texturizada-06.jpg",
+    "category": "Camisa Basica Texturizada",
+    "categorySlug": "camisa-basica-texturizada",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisa-basica-texturizada-07",
+    "sku": "BRC-CBT-07",
+    "name": "Camisa Basica Texturizada 07",
+    "description": "Camisa Basica Texturizada BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisa-basica-texturizada/camisa-basica-texturizada-07.jpg",
+    "category": "Camisa Basica Texturizada",
+    "categorySlug": "camisa-basica-texturizada",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-basica-algodao-01",
+    "sku": "BRC-CBA-01",
+    "name": "Camisa Basica Algodão 01",
+    "description": "Camisa Basica Algodão BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-basica-algodao/camisas-basica-algodao-01.jpg",
+    "category": "Camisas Basica Algodão",
+    "categorySlug": "camisas-basica-algodao",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-basica-algodao-02",
+    "sku": "BRC-CBA-02",
+    "name": "Camisa Basica Algodão 02",
+    "description": "Camisa Basica Algodão BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-basica-algodao/camisas-basica-algodao-02.jpg",
+    "category": "Camisas Basica Algodão",
+    "categorySlug": "camisas-basica-algodao",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-basica-algodao-03",
+    "sku": "BRC-CBA-03",
+    "name": "Camisa Basica Algodão 03",
+    "description": "Camisa Basica Algodão BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-basica-algodao/camisas-basica-algodao-03.jpg",
+    "category": "Camisas Basica Algodão",
+    "categorySlug": "camisas-basica-algodao",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-basica-algodao-04",
+    "sku": "BRC-CBA-04",
+    "name": "Camisa Basica Algodão 04",
+    "description": "Camisa Basica Algodão BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-basica-algodao/camisas-basica-algodao-04.jpg",
+    "category": "Camisas Basica Algodão",
+    "categorySlug": "camisas-basica-algodao",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-basica-algodao-05",
+    "sku": "BRC-CBA-05",
+    "name": "Camisa Basica Algodão 05",
+    "description": "Camisa Basica Algodão BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-basica-algodao/camisas-basica-algodao-05.jpg",
+    "category": "Camisas Basica Algodão",
+    "categorySlug": "camisas-basica-algodao",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-basica-algodao-06",
+    "sku": "BRC-CBA-06",
+    "name": "Camisa Basica Algodão 06",
+    "description": "Camisa Basica Algodão BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-basica-algodao/camisas-basica-algodao-06.jpg",
+    "category": "Camisas Basica Algodão",
+    "categorySlug": "camisas-basica-algodao",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-gola-v-01",
+    "sku": "BRC-CGV-01",
+    "name": "Camisa Gola V 01",
+    "description": "Camisa Gola V BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-gola-v/camisas-gola-v-01.jpg",
+    "category": "Camisas Gola V",
+    "categorySlug": "camisas-gola-v",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-gola-v-02",
+    "sku": "BRC-CGV-02",
+    "name": "Camisa Gola V 02",
+    "description": "Camisa Gola V BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-gola-v/camisas-gola-v-02.jpg",
+    "category": "Camisas Gola V",
+    "categorySlug": "camisas-gola-v",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-gola-v-03",
+    "sku": "BRC-CGV-03",
+    "name": "Camisa Gola V 03",
+    "description": "Camisa Gola V BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-gola-v/camisas-gola-v-03.jpg",
+    "category": "Camisas Gola V",
+    "categorySlug": "camisas-gola-v",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-gola-v-04",
+    "sku": "BRC-CGV-04",
+    "name": "Camisa Gola V 04",
+    "description": "Camisa Gola V BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-gola-v/camisas-gola-v-04.jpg",
+    "category": "Camisas Gola V",
+    "categorySlug": "camisas-gola-v",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-linho-social-01",
+    "sku": "BRC-CLS-01",
+    "name": "Camisa Linho Social 01",
+    "description": "Camisa Linho Social BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-linho-social/camisas-linho-social-01.jpg",
+    "category": "Camisas Linho Social",
+    "categorySlug": "camisas-linho-social",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-linho-social-02",
+    "sku": "BRC-CLS-02",
+    "name": "Camisa Linho Social 02",
+    "description": "Camisa Linho Social BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-linho-social/camisas-linho-social-02.jpg",
+    "category": "Camisas Linho Social",
+    "categorySlug": "camisas-linho-social",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-linho-social-03",
+    "sku": "BRC-CLS-03",
+    "name": "Camisa Linho Social 03",
+    "description": "Camisa Linho Social BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-linho-social/camisas-linho-social-03.jpg",
+    "category": "Camisas Linho Social",
+    "categorySlug": "camisas-linho-social",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-linho-social-04",
+    "sku": "BRC-CLS-04",
+    "name": "Camisa Linho Social 04",
+    "description": "Camisa Linho Social BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-linho-social/camisas-linho-social-04.jpg",
+    "category": "Camisas Linho Social",
+    "categorySlug": "camisas-linho-social",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-linho-social-05",
+    "sku": "BRC-CLS-05",
+    "name": "Camisa Linho Social 05",
+    "description": "Camisa Linho Social BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-linho-social/camisas-linho-social-05.jpg",
+    "category": "Camisas Linho Social",
+    "categorySlug": "camisas-linho-social",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-polo-01",
+    "sku": "BRC-CP-01",
+    "name": "Camisa Polo 01",
+    "description": "Camisa Polo BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-polo/camisas-polo-01.jpg",
+    "category": "Camisas Polo",
+    "categorySlug": "camisas-polo",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-polo-02",
+    "sku": "BRC-CP-02",
+    "name": "Camisa Polo 02",
+    "description": "Camisa Polo BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-polo/camisas-polo-02.jpg",
+    "category": "Camisas Polo",
+    "categorySlug": "camisas-polo",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-polo-03",
+    "sku": "BRC-CP-03",
+    "name": "Camisa Polo 03",
+    "description": "Camisa Polo BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-polo/camisas-polo-03.jpg",
+    "category": "Camisas Polo",
+    "categorySlug": "camisas-polo",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-polo-04",
+    "sku": "BRC-CP-04",
+    "name": "Camisa Polo 04",
+    "description": "Camisa Polo BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-polo/camisas-polo-04.jpg",
+    "category": "Camisas Polo",
+    "categorySlug": "camisas-polo",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-polo-05",
+    "sku": "BRC-CP-05",
+    "name": "Camisa Polo 05",
+    "description": "Camisa Polo BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-polo/camisas-polo-05.jpg",
+    "category": "Camisas Polo",
+    "categorySlug": "camisas-polo",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-polo-06",
+    "sku": "BRC-CP-06",
+    "name": "Camisa Polo 06",
+    "description": "Camisa Polo BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-polo/camisas-polo-06.jpg",
+    "category": "Camisas Polo",
+    "categorySlug": "camisas-polo",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-polo-07",
+    "sku": "BRC-CP-07",
+    "name": "Camisa Polo 07",
+    "description": "Camisa Polo BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-polo/camisas-polo-07.jpg",
+    "category": "Camisas Polo",
+    "categorySlug": "camisas-polo",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-polo-ziper-01",
+    "sku": "BRC-CPZ-01",
+    "name": "Camisa Polo ziper 01",
+    "description": "Camisa Polo ziper BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-polo-ziper/camisas-polo-ziper-01.jpg",
+    "category": "Camisas Polo ziper",
+    "categorySlug": "camisas-polo-ziper",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-polo-ziper-02",
+    "sku": "BRC-CPZ-02",
+    "name": "Camisa Polo ziper 02",
+    "description": "Camisa Polo ziper BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-polo-ziper/camisas-polo-ziper-02.jpg",
+    "category": "Camisas Polo ziper",
+    "categorySlug": "camisas-polo-ziper",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-polo-ziper-03",
+    "sku": "BRC-CPZ-03",
+    "name": "Camisa Polo ziper 03",
+    "description": "Camisa Polo ziper BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-polo-ziper/camisas-polo-ziper-03.jpg",
+    "category": "Camisas Polo ziper",
+    "categorySlug": "camisas-polo-ziper",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-polo-ziper-metalico-01",
+    "sku": "BRC-CPZM-01",
+    "name": "Camisa Polo ziper Metalico 01",
+    "description": "Camisa Polo ziper Metalico BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-polo-ziper-metalico/camisas-polo-ziper-metalico-01.jpg",
+    "category": "Camisas Polo ziper Metalico",
+    "categorySlug": "camisas-polo-ziper-metalico",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-polo-ziper-metalico-02",
+    "sku": "BRC-CPZM-02",
+    "name": "Camisa Polo ziper Metalico 02",
+    "description": "Camisa Polo ziper Metalico BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-polo-ziper-metalico/camisas-polo-ziper-metalico-02.jpg",
+    "category": "Camisas Polo ziper Metalico",
+    "categorySlug": "camisas-polo-ziper-metalico",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-polo-ziper-metalico-03",
+    "sku": "BRC-CPZM-03",
+    "name": "Camisa Polo ziper Metalico 03",
+    "description": "Camisa Polo ziper Metalico BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-polo-ziper-metalico/camisas-polo-ziper-metalico-03.jpg",
+    "category": "Camisas Polo ziper Metalico",
+    "categorySlug": "camisas-polo-ziper-metalico",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-polo-ziper-metalico-04",
+    "sku": "BRC-CPZM-04",
+    "name": "Camisa Polo ziper Metalico 04",
+    "description": "Camisa Polo ziper Metalico BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-polo-ziper-metalico/camisas-polo-ziper-metalico-04.jpg",
+    "category": "Camisas Polo ziper Metalico",
+    "categorySlug": "camisas-polo-ziper-metalico",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-polo-ziper-metalico-05",
+    "sku": "BRC-CPZM-05",
+    "name": "Camisa Polo ziper Metalico 05",
+    "description": "Camisa Polo ziper Metalico BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-polo-ziper-metalico/camisas-polo-ziper-metalico-05.jpg",
+    "category": "Camisas Polo ziper Metalico",
+    "categorySlug": "camisas-polo-ziper-metalico",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-polo-ziper-metalico-06",
+    "sku": "BRC-CPZM-06",
+    "name": "Camisa Polo ziper Metalico 06",
+    "description": "Camisa Polo ziper Metalico BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-polo-ziper-metalico/camisas-polo-ziper-metalico-06.jpg",
+    "category": "Camisas Polo ziper Metalico",
+    "categorySlug": "camisas-polo-ziper-metalico",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-regata-01",
+    "sku": "BRC-CR-01",
+    "name": "Camisa Regata 01",
+    "description": "Camisa Regata BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-regata/camisas-regata-01.jpg",
+    "category": "Camisas Regata",
+    "categorySlug": "camisas-regata",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-regata-02",
+    "sku": "BRC-CR-02",
+    "name": "Camisa Regata 02",
+    "description": "Camisa Regata BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-regata/camisas-regata-02.jpg",
+    "category": "Camisas Regata",
+    "categorySlug": "camisas-regata",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-regata-03",
+    "sku": "BRC-CR-03",
+    "name": "Camisa Regata 03",
+    "description": "Camisa Regata BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-regata/camisas-regata-03.jpg",
+    "category": "Camisas Regata",
+    "categorySlug": "camisas-regata",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-regata-04",
+    "sku": "BRC-CR-04",
+    "name": "Camisa Regata 04",
+    "description": "Camisa Regata BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-regata/camisas-regata-04.jpg",
+    "category": "Camisas Regata",
+    "categorySlug": "camisas-regata",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-texturizada-brisa-01",
+    "sku": "BRC-CTB-01",
+    "name": "Camisa Texturizada Brisa 01",
+    "description": "Camisa Texturizada Brisa BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-texturizada-brisa/camisas-texturizada-brisa-01.jpg",
+    "category": "Camisas Texturizada Brisa",
+    "categorySlug": "camisas-texturizada-brisa",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-texturizada-brisa-02",
+    "sku": "BRC-CTB-02",
+    "name": "Camisa Texturizada Brisa 02",
+    "description": "Camisa Texturizada Brisa BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-texturizada-brisa/camisas-texturizada-brisa-02.jpg",
+    "category": "Camisas Texturizada Brisa",
+    "categorySlug": "camisas-texturizada-brisa",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-texturizada-brisa-03",
+    "sku": "BRC-CTB-03",
+    "name": "Camisa Texturizada Brisa 03",
+    "description": "Camisa Texturizada Brisa BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-texturizada-brisa/camisas-texturizada-brisa-03.jpg",
+    "category": "Camisas Texturizada Brisa",
+    "categorySlug": "camisas-texturizada-brisa",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-texturizada-brisa-04",
+    "sku": "BRC-CTB-04",
+    "name": "Camisa Texturizada Brisa 04",
+    "description": "Camisa Texturizada Brisa BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-texturizada-brisa/camisas-texturizada-brisa-04.jpg",
+    "category": "Camisas Texturizada Brisa",
+    "categorySlug": "camisas-texturizada-brisa",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "camisas-texturizada-brisa-05",
+    "sku": "BRC-CTB-05",
+    "name": "Camisa Texturizada Brisa 05",
+    "description": "Camisa Texturizada Brisa BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/camisas-texturizada-brisa/camisas-texturizada-brisa-05.jpg",
+    "category": "Camisas Texturizada Brisa",
+    "categorySlug": "camisas-texturizada-brisa",
+    "niche": "Camisas",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "jaqueta-01",
+    "sku": "BRC-J-01",
+    "name": "Jaqueta 01",
+    "description": "Jaqueta BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/jaqueta/jaqueta-01.jpg",
+    "category": "Jaqueta",
+    "categorySlug": "jaqueta",
+    "niche": "Jaqueta",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "jaqueta-02",
+    "sku": "BRC-J-02",
+    "name": "Jaqueta 02",
+    "description": "Jaqueta BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/jaqueta/jaqueta-02.jpg",
+    "category": "Jaqueta",
+    "categorySlug": "jaqueta",
+    "niche": "Jaqueta",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "jaqueta-03",
+    "sku": "BRC-J-03",
+    "name": "Jaqueta 03",
+    "description": "Jaqueta BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/jaqueta/jaqueta-03.jpg",
+    "category": "Jaqueta",
+    "categorySlug": "jaqueta",
+    "niche": "Jaqueta",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "jaqueta-04",
+    "sku": "BRC-J-04",
+    "name": "Jaqueta 04",
+    "description": "Jaqueta BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/jaqueta/jaqueta-04.jpg",
+    "category": "Jaqueta",
+    "categorySlug": "jaqueta",
+    "niche": "Jaqueta",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "short-flex-01",
+    "sku": "BRC-SF-01",
+    "name": "Short Flex 01",
+    "description": "Short Flex BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/short-flex/short-flex-01.jpg",
+    "category": "Short Flex",
+    "categorySlug": "short-flex",
+    "niche": "Shorts",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "short-flex-02",
+    "sku": "BRC-SF-02",
+    "name": "Short Flex 02",
+    "description": "Short Flex BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/short-flex/short-flex-02.jpg",
+    "category": "Short Flex",
+    "categorySlug": "short-flex",
+    "niche": "Shorts",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "short-flex-03",
+    "sku": "BRC-SF-03",
+    "name": "Short Flex 03",
+    "description": "Short Flex BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/short-flex/short-flex-03.jpg",
+    "category": "Short Flex",
+    "categorySlug": "short-flex",
+    "niche": "Shorts",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "short-flex-04",
+    "sku": "BRC-SF-04",
+    "name": "Short Flex 04",
+    "description": "Short Flex BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/short-flex/short-flex-04.jpg",
+    "category": "Short Flex",
+    "categorySlug": "short-flex",
+    "niche": "Shorts",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "short-flex-05",
+    "sku": "BRC-SF-05",
+    "name": "Short Flex 05",
+    "description": "Short Flex BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/short-flex/short-flex-05.jpg",
+    "category": "Short Flex",
+    "categorySlug": "short-flex",
+    "niche": "Shorts",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "short-linho-01",
+    "sku": "BRC-SL-01",
+    "name": "Short Linho 01",
+    "description": "Short Linho BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/short-linho/short-linho-01.jpg",
+    "category": "Short Linho",
+    "categorySlug": "short-linho",
+    "niche": "Shorts",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "short-linho-02",
+    "sku": "BRC-SL-02",
+    "name": "Short Linho 02",
+    "description": "Short Linho BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/short-linho/short-linho-02.jpg",
+    "category": "Short Linho",
+    "categorySlug": "short-linho",
+    "niche": "Shorts",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "short-linho-03",
+    "sku": "BRC-SL-03",
+    "name": "Short Linho 03",
+    "description": "Short Linho BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/short-linho/short-linho-03.jpg",
+    "category": "Short Linho",
+    "categorySlug": "short-linho",
+    "niche": "Shorts",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "short-linho-04",
+    "sku": "BRC-SL-04",
+    "name": "Short Linho 04",
+    "description": "Short Linho BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/short-linho/short-linho-04.jpg",
+    "category": "Short Linho",
+    "categorySlug": "short-linho",
+    "niche": "Shorts",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "short-linho-05",
+    "sku": "BRC-SL-05",
+    "name": "Short Linho 05",
+    "description": "Short Linho BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/short-linho/short-linho-05.jpg",
+    "category": "Short Linho",
+    "categorySlug": "short-linho",
+    "niche": "Shorts",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "short-sarja-01",
+    "sku": "BRC-SS-01",
+    "name": "Short Sarja 01",
+    "description": "Short Sarja BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/short-sarja/short-sarja-01.jpg",
+    "category": "Short Sarja",
+    "categorySlug": "short-sarja",
+    "niche": "Shorts",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "short-sarja-02",
+    "sku": "BRC-SS-02",
+    "name": "Short Sarja 02",
+    "description": "Short Sarja BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/short-sarja/short-sarja-02.jpg",
+    "category": "Short Sarja",
+    "categorySlug": "short-sarja",
+    "niche": "Shorts",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "short-sarja-03",
+    "sku": "BRC-SS-03",
+    "name": "Short Sarja 03",
+    "description": "Short Sarja BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/short-sarja/short-sarja-03.jpg",
+    "category": "Short Sarja",
+    "categorySlug": "short-sarja",
+    "niche": "Shorts",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
+  },
+  {
+    "id": "sueter-01",
+    "sku": "BRC-S-01",
+    "name": "Suéter 01",
+    "description": "Suéter BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+    "price": null,
+    "imageUrl": "produtos/sueter/sueter-01.jpg",
+    "category": "Suéter",
+    "categorySlug": "sueter",
+    "niche": "Suéter",
+    "sizes": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "colors": [],
+    "inStock": true
   }
 ]

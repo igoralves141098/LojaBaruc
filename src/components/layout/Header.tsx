@@ -1,25 +1,40 @@
-import { Search, ShoppingBag, X } from 'lucide-react'
+import { Menu, Search, ShoppingBag, X } from 'lucide-react'
 import { BarucLogo } from '@/components/ui/BarucLogo'
 import { useCart } from '@/features/cart/hooks/useCart'
 
 interface HeaderProps {
   searchQuery: string
   onSearchChange: (query: string) => void
+  onOpenMenu: () => void
+  onGoHome: () => void
 }
 
-export const Header = ({ searchQuery, onSearchChange }: HeaderProps) => {
+export const Header = ({ searchQuery, onSearchChange, onOpenMenu, onGoHome }: HeaderProps) => {
   const { totalItems, openCart } = useCart()
   const badgeLabel = totalItems > 99 ? '99+' : String(totalItems)
 
   return (
     <header className="sticky top-0 z-30 border-b border-baruc-gold/25 bg-baruc-green text-white shadow-md">
       <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto] items-center gap-x-3 gap-y-3 px-4 py-3 sm:px-6 md:grid-cols-[auto_1fr_auto] md:gap-x-8 lg:px-8">
-        <a
-          href="/"
-          className="justify-self-start rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
-        >
-          <BarucLogo />
-        </a>
+        <div className="flex items-center gap-2.5 justify-self-start sm:gap-3">
+          <button
+            type="button"
+            onClick={onOpenMenu}
+            aria-label="Abrir menu de categorias"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-baruc-gold/40 bg-baruc-greenLight/50 text-baruc-gold transition-colors hover:bg-baruc-gold hover:text-baruc-green active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
+          >
+            <Menu className="h-5 w-5" aria-hidden="true" />
+          </button>
+
+          <button
+            type="button"
+            onClick={onGoHome}
+            aria-label="Ir para a página inicial da BARUC"
+            className="rounded-lg text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
+          >
+            <BarucLogo />
+          </button>
+        </div>
 
         <div className="relative col-span-2 row-start-2 w-full md:col-span-1 md:row-start-1 md:mx-auto md:max-w-xl">
           <label htmlFor="catalog-search" className="sr-only">
@@ -37,7 +52,7 @@ export const Header = ({ searchQuery, onSearchChange }: HeaderProps) => {
             autoComplete="off"
             autoCorrect="off"
             spellCheck={false}
-            placeholder="Buscar camisas, calçados, perfumes..."
+            placeholder="Buscar polo, linho, short, jaqueta..."
             value={searchQuery}
             onChange={(event) => onSearchChange(event.target.value)}
             className="h-11 w-full appearance-none rounded-xl border border-baruc-gold/30 bg-baruc-greenDark/90 pl-11 pr-11 text-base text-white placeholder:text-neutral-300 transition-colors focus:border-baruc-gold focus:outline-none focus:ring-2 focus:ring-baruc-gold/25"

@@ -4,7 +4,7 @@ import { useCart } from '@/features/cart/hooks/useCart'
 import type { CartItem } from '@/features/cart/types/cart.types'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import { WhatsAppService } from '@/services/whatsapp.service'
-import { formatCurrency } from '@/utils/formatters'
+import { formatCurrency, formatPrice } from '@/utils/formatters'
 
 const PAYMENT_METHODS = ['PIX', 'Cartão', 'Combinar'] as const
 const DELIVERY_TYPES = ['Entrega', 'Retirada na Loja'] as const
@@ -20,7 +20,7 @@ interface CartLineProps {
 }
 
 const CartLine = ({ item, onIncrement, onDecrement, onRemove }: CartLineProps) => {
-  const { product, selectedSize, quantity } = item
+  const { product, selectedSize, selectedColor, quantity } = item
 
   return (
     <li className="flex gap-3 rounded-2xl border border-neutral-200/80 bg-white p-3 shadow-sm">
@@ -41,7 +41,7 @@ const CartLine = ({ item, onIncrement, onDecrement, onRemove }: CartLineProps) =
           <button
             type="button"
             onClick={onRemove}
-            aria-label={`Remover ${product.name} tamanho ${selectedSize}`}
+            aria-label={`Remover ${product.name} tamanho ${selectedSize}${selectedColor ? ` cor ${selectedColor}` : ''}`}
             className="-mr-1 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-600 active:scale-95"
           >
             <Trash2 className="h-4 w-4" aria-hidden="true" />
@@ -51,6 +51,11 @@ const CartLine = ({ item, onIncrement, onDecrement, onRemove }: CartLineProps) =
           <span className="rounded-md border border-baruc-gold/40 bg-baruc-goldLight px-2 py-0.5 text-xs font-semibold text-baruc-green">
             Tam: {selectedSize}
           </span>
+          {selectedColor && (
+            <span className="rounded-md border border-neutral-200 bg-white px-2 py-0.5 text-xs font-semibold text-neutral-700">
+              Cor: {selectedColor}
+            </span>
+          )}
           <span className="font-mono text-[10px] text-neutral-400">{product.sku}</span>
         </div>
         <div className="mt-auto flex items-end justify-between gap-2 pt-2">
@@ -76,8 +81,12 @@ const CartLine = ({ item, onIncrement, onDecrement, onRemove }: CartLineProps) =
             </button>
           </div>
           <div className="text-right">
-            <p className="text-base font-bold text-neutral-900">{formatCurrency(product.price * quantity)}</p>
-            {quantity > 1 && <p className="text-[11px] text-neutral-400">{formatCurrency(product.price)} cada</p>}
+            <p className="text-base font-bold text-neutral-900">
+              {product.price === null ? formatPrice(null) : formatCurrency(product.price * quantity)}
+            </p>
+            {quantity > 1 && product.price !== null && (
+              <p className="text-[11px] text-neutral-400">{formatCurrency(product.price)} cada</p>
+            )}
           </div>
         </div>
       </div>
@@ -97,6 +106,7 @@ export const CartDrawer = () => {
     subtotal,
     totalDiscount,
     totalPrice,
+    hasPriceOnRequest,
   } = useCart()
 
   const [customerName, setCustomerName] = useState<string>('')
@@ -126,6 +136,7 @@ export const CartDrawer = () => {
     subtotal,
     totalDiscount,
     totalPrice,
+    hasPriceOnRequest,
     customerName,
     paymentMethod,
     deliveryType,
@@ -207,11 +218,11 @@ export const CartDrawer = () => {
               <ul className="flex flex-col gap-3">
                 {items.map((item) => (
                   <CartLine
-                    key={`${item.product.id}-${item.selectedSize}`}
+                    key={`${item.product.id}-${item.selectedSize}-${item.selectedColor ?? ''}`}
                     item={item}
-                    onIncrement={() => updateQuantity(item.product.id, item.selectedSize, item.quantity + 1)}
-                    onDecrement={() => updateQuantity(item.product.id, item.selectedSize, item.quantity - 1)}
-                    onRemove={() => removeItem(item.product.id, item.selectedSize)}
+                    onIncrement={() => updateQuantity(item.product.id, item.selectedSize, item.quantity + 1, item.selectedColor)}
+                    onDecrement={() => updateQuantity(item.product.id, item.selectedSize, item.quantity - 1, item.selectedColor)}
+                    onRemove={() => removeItem(item.product.id, item.selectedSize, item.selectedColor)}
                   />
                 ))}
               </ul>
@@ -301,9 +312,16 @@ export const CartDrawer = () => {
                 )}
                 <div className="mt-1 flex items-baseline justify-between border-t border-dashed border-neutral-200 pt-2">
                   <dt className="font-serif text-xl font-semibold text-baruc-green">Total</dt>
-                  <dd className="text-2xl font-bold tabular-nums text-baruc-green">{formatCurrency(totalPrice)}</dd>
+                  <dd className="text-2xl font-bold tabular-nums text-baruc-green">
+                    {hasPriceOnRequest && totalPrice === 0 ? formatPrice(null) : formatCurrency(totalPrice)}
+                  </dd>
                 </div>
               </dl>
+              {hasPriceOnRequest && (
+                <p className="mt-2 text-xs text-neutral-500">
+                  Itens sob consulta: o valor final será confirmado pelo WhatsApp.
+                </p>
+              )}
 
               <a
                 href={checkoutUrl}

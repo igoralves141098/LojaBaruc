@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
+import { SidebarMenu } from '@/components/layout/SidebarMenu'
 import { CartDrawer } from '@/features/cart/components/CartDrawer'
 import { FloatingCartBar } from '@/features/cart/components/FloatingCartBar'
 import { CartProvider } from '@/features/cart/context/CartContext'
@@ -9,8 +11,9 @@ import { useCatalog } from '@/features/catalog/hooks/useCatalog'
 
 const Storefront = () => {
   const {
+    products,
     filteredProducts,
-    categories,
+    nicheGroups,
     isLoading,
     searchQuery,
     setSearchQuery,
@@ -19,13 +22,35 @@ const Storefront = () => {
     clearFilters,
   } = useCatalog()
 
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false)
+
   const resultLabel = isLoading
     ? 'Carregando coleção...'
     : `${filteredProducts.length} ${filteredProducts.length === 1 ? 'peça encontrada' : 'peças encontradas'}`
 
+  const handleGoHome = () => {
+    clearFilters()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
     <div className="flex min-h-dvh flex-col">
-      <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+      <Header
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onOpenMenu={() => setIsMenuOpen(true)}
+        onGoHome={handleGoHome}
+      />
+
+      <SidebarMenu
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        onGoHome={handleGoHome}
+        nicheGroups={nicheGroups}
+        totalProducts={products.length}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+      />
 
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 pb-28 pt-6 sm:px-6 sm:pb-12 sm:pt-10 lg:px-8">
         <section className="flex flex-col gap-2">
@@ -43,7 +68,7 @@ const Storefront = () => {
           <div className="mt-1 h-px w-16 bg-baruc-gold" aria-hidden="true" />
         </section>
 
-        <CategoryFilter categories={categories} selectedCategory={selectedCategory} onSelect={setSelectedCategory} />
+        <CategoryFilter selectedCategory={selectedCategory} onSelect={setSelectedCategory} />
 
         <ProductGrid products={filteredProducts} isLoading={isLoading} onClearFilters={clearFilters} />
       </main>

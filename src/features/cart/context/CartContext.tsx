@@ -3,11 +3,11 @@ import { CartContext } from '@/features/cart/context/cart-context'
 import type { CartContextType, CartItem } from '@/features/cart/types/cart.types'
 import type { Product } from '@/features/catalog/types/product.types'
 
-const STORAGE_KEY = '@BarucMasculina:cart-v1'
+const STORAGE_KEY = '@BarucMasculina:cart-v2'
 const MAX_QUANTITY_PER_ITEM = 99
 
-const isSameLine = (item: CartItem, productId: string, size: string): boolean =>
-  item.product.id === productId && item.selectedSize === size
+const isSameLine = (item: CartItem, productId: string, size: string, color?: string): boolean =>
+  item.product.id === productId && item.selectedSize === size && (item.selectedColor ?? '') === (color ?? '')
 
 const clampQuantity = (quantity: number): number =>
   Math.min(MAX_QUANTITY_PER_ITEM, Math.max(1, Math.floor(quantity)))
@@ -18,6 +18,7 @@ const isValidCartItem = (value: unknown): value is CartItem => {
   const product = item.product as Record<string, unknown> | null | undefined
   return (
     typeof item.selectedSize === 'string' &&
+    (item.selectedColor === undefined || typeof item.selectedColor === 'string') &&
     typeof item.quantity === 'number' &&
     item.quantity > 0 &&
     typeof product === 'object' &&
@@ -25,7 +26,7 @@ const isValidCartItem = (value: unknown): value is CartItem => {
     typeof product.id === 'string' &&
     typeof product.name === 'string' &&
     typeof product.sku === 'string' &&
-    typeof product.price === 'number' &&
+    (product.price === null || typeof product.price === 'number') &&
     typeof product.imageUrl === 'string'
   )
 }
@@ -74,30 +75,30 @@ export const CartProvider = ({ children }: CartProviderProps) => {
   const openCart = useCallback(() => setIsOpen(true), [])
   const closeCart = useCallback(() => setIsOpen(false), [])
 
-  const addItem = useCallback((product: Product, size: string, quantity: number = 1) => {
+  const addItem = useCallback((product: Product, size: string, quantity: number = 1, color?: string) => {
     const safeQuantity = clampQuantity(quantity)
     setItems((current) => {
-      const existing = current.find((item) => isSameLine(item, product.id, size))
+      const existing = current.find((item) => isSameLine(item, product.id, size, color))
       if (existing) {
         return current.map((item) =>
-          isSameLine(item, product.id, size)
+          isSameLine(item, product.id, size, color)
             ? { ...item, product, quantity: clampQuantity(item.quantity + safeQuantity) }
             : item,
         )
       }
-      return [...current, { product, selectedSize: size, quantity: safeQuantity }]
+      return [...current, { product, selectedSize: size, selectedColor: color, quantity: safeQuantity }]
     })
   }, [])
 
-  const removeItem = useCallback((productId: string, size: string) => {
-    setItems((current) => current.filter((item) => !isSameLine(item, productId, size)))
+  const removeItem = useCallback((productId: string, size: string, color?: string) => {
+    setItems((current) => current.filter((item) => !isSameLine(item, productId, size, color)))
   }, [])
 
-  const updateQuantity = useCallback((productId: string, size: string, quantity: number) => {
+  const updateQuantity = useCallback((productId: string, size: string, quantity: number, color?: string) => {
     setItems((current) => {
-      if (quantity <= 0) return current.filter((item) => !isSameLine(item, productId, size))
+      if (quantity <= 0) return current.filter((item) => !isSameLine(item, productId, size, color))
       return current.map((item) =>
-        isSameLine(item, productId, size) ? { ...item, quantity: clampQuantity(quantity) } : item,
+        isSameLine(item, productId, size, color) ? { ...item, quantity: clampQuantity(quantity) } : item,
       )
     })
   }, [])
@@ -107,16 +108,20 @@ export const CartProvider = ({ children }: CartProviderProps) => {
   const totals = useMemo(() => {
     return items.reduce(
       (acc, { product, quantity }) => {
+        acc.totalItems += quantity
+        if (product.price === null) {
+          acc.hasPriceOnRequest = true
+          return acc
+        }
         const listPrice =
           product.originalPrice !== undefined && product.originalPrice > product.price
             ? product.originalPrice
             : product.price
-        acc.totalItems += quantity
         acc.subtotal += listPrice * quantity
         acc.totalPrice += product.price * quantity
         return acc
       },
-      { totalItems: 0, subtotal: 0, totalPrice: 0 },
+      { totalItems: 0, subtotal: 0, totalPrice: 0, hasPriceOnRequest: false },
     )
   }, [items])
 
@@ -134,6 +139,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
       subtotal: Math.round(totals.subtotal * 100) / 100,
       totalDiscount: Math.round((totals.subtotal - totals.totalPrice) * 100) / 100,
       totalPrice: Math.round(totals.totalPrice * 100) / 100,
+      hasPriceOnRequest: totals.hasPriceOnRequest,
     }),
     [items, isOpen, openCart, closeCart, addItem, removeItem, updateQuantity, clearCart, totals],
   )

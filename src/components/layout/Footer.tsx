@@ -1,6 +1,7 @@
-import { Clock, MapPin, MessageCircle } from 'lucide-react'
+import { Clock, Mail, MapPin, MessageCircle } from 'lucide-react'
 import { BarucLogo } from '@/components/ui/BarucLogo'
 import { env } from '@/config/env'
+import { EmailService } from '@/services/email.service'
 import { WhatsAppService } from '@/services/whatsapp.service'
 
 export const Footer = () => {
@@ -32,15 +33,24 @@ export const Footer = () => {
         <div className="flex flex-col gap-3 md:items-end md:text-right">
           <h2 className="font-serif text-xl font-semibold tracking-wide text-baruc-gold">Atendimento</h2>
           <p className="text-sm text-neutral-300">Dúvidas sobre tamanhos, trocas ou pagamentos?</p>
-          <a
-            href={WhatsAppService.generateGeneralUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-baruc-gold bg-baruc-gold px-5 text-sm font-bold text-baruc-green shadow-sm transition-all hover:bg-baruc-goldDark active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold focus-visible:ring-offset-2 focus-visible:ring-offset-baruc-green"
-          >
-            <MessageCircle className="h-5 w-5" aria-hidden="true" />
-            Falar no WhatsApp
-          </a>
+          <div className="flex flex-wrap gap-2 md:justify-end">
+            <a
+              href={WhatsAppService.generateGeneralUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-baruc-gold bg-baruc-gold px-5 text-sm font-bold text-baruc-green shadow-sm transition-all hover:bg-baruc-goldDark active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold focus-visible:ring-offset-2 focus-visible:ring-offset-baruc-green"
+            >
+              <MessageCircle className="h-5 w-5" aria-hidden="true" />
+              Falar no WhatsApp
+            </a>
+            <a
+              href={EmailService.generateContactUrl()}
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-baruc-gold/40 bg-baruc-greenLight/50 px-4 text-sm font-semibold text-baruc-gold transition-all hover:border-baruc-gold hover:bg-baruc-greenLight active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold focus-visible:ring-offset-2 focus-visible:ring-offset-baruc-green"
+            >
+              <Mail className="h-4 w-4" aria-hidden="true" />
+              Enviar E-mail
+            </a>
+          </div>
         </div>
       </div>
 

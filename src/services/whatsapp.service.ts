@@ -1,7 +1,7 @@
 import { env } from '@/config/env'
 import type { CartItem } from '@/features/cart/types/cart.types'
 import type { Product } from '@/features/catalog/types/product.types'
-import { formatCurrency } from '@/utils/formatters'
+import { formatCurrency, formatPrice } from '@/utils/formatters'
 
 const WHATSAPP_BASE_URL = 'https://wa.me'
 const DIVIDER = '------------------------------'
@@ -11,6 +11,7 @@ export interface CartCheckoutParams {
   subtotal: number
   totalDiscount: number
   totalPrice: number
+  hasPriceOnRequest?: boolean
   customerName?: string
   paymentMethod?: string
   deliveryType?: string
@@ -22,12 +23,14 @@ const buildUrl = (message: string): string =>
 const clean = (value: string | undefined): string => (value ?? '').replace(/\s+/g, ' ').trim()
 
 const buildItemLines = (item: CartItem, index: number): string[] => {
-  const { product, selectedSize, quantity } = item
+  const { product, selectedSize, selectedColor, quantity } = item
+  const variant = selectedColor ? `Tam: ${selectedSize} | Cor: ${selectedColor}` : `Tam: ${selectedSize}`
   return [
     `*${index + 1}. ${product.name}*`,
-    `   Tam: ${selectedSize} | SKU: ${product.sku}`,
-    `   Qtd: ${quantity} x ${formatCurrency(product.price)}`,
-    `   Subtotal: ${formatCurrency(product.price * quantity)}`,
+    `   ${product.category}`,
+    `   ${variant} | SKU: ${product.sku}`,
+    `   Qtd: ${quantity} x ${formatPrice(product.price)}`,
+    `   Subtotal: ${product.price === null ? formatPrice(null) : formatCurrency(product.price * quantity)}`,
   ]
 }
 
@@ -36,6 +39,7 @@ const buildCheckoutMessage = ({
   subtotal,
   totalDiscount,
   totalPrice,
+  hasPriceOnRequest = false,
   customerName,
   paymentMethod,
   deliveryType,
@@ -59,7 +63,13 @@ const buildCheckoutMessage = ({
     lines.push(`Subtotal: ${formatCurrency(subtotal)}`, `Desconto total: -${formatCurrency(totalDiscount)}`)
   }
 
-  lines.push(`*VALOR TOTAL DO PEDIDO: ${formatCurrency(totalPrice)}*`)
+  if (hasPriceOnRequest && totalPrice === 0) {
+    lines.push('*VALOR TOTAL: SOB CONSULTA*', 'Aguardo o orçamento das peças selecionadas.')
+  } else if (hasPriceOnRequest) {
+    lines.push(`*VALOR DOS ITENS COM PREÇO: ${formatCurrency(totalPrice)}*`, 'Itens sob consulta: aguardo o orçamento.')
+  } else {
+    lines.push(`*VALOR TOTAL DO PEDIDO: ${formatCurrency(totalPrice)}*`)
+  }
 
   const name = clean(customerName)
   const payment = clean(paymentMethod)
@@ -84,10 +94,13 @@ const buildAvailabilityMessage = (product: Product): string =>
     `*Produto:* ${product.name}`,
     `*SKU:* ${product.sku}`,
     `*Tamanhos:* ${product.sizes.join(', ')}`,
-    `*Preço:* ${formatCurrency(product.price)}`,
+    `*Preço:* ${formatPrice(product.price)}`,
     '',
     'Poderia me avisar quando houver reposição?',
   ].join('\n')
+
+const buildCategoryMessage = (category: string): string =>
+  `Olá! Vim pelo catálogo online da *${env.storeName}* e gostaria de ver as opções de *${category}*.`
 
 const buildGeneralMessage = (): string =>
   `Olá! Vim pelo catálogo online da *${env.storeName}* e gostaria de atendimento.`
@@ -99,6 +112,10 @@ export const WhatsAppService = {
 
   generateAvailabilityUrl(product: Product): string {
     return buildUrl(buildAvailabilityMessage(product))
+  },
+
+  generateCategoryUrl(category: string): string {
+    return buildUrl(buildCategoryMessage(category))
   },
 
   generateGeneralUrl(): string {

@@ -1,9 +1,9 @@
 import { ChevronRight, ShoppingBag } from 'lucide-react'
 import { useCart } from '@/features/cart/hooks/useCart'
-import { formatCurrency } from '@/utils/formatters'
+import { formatCurrency, formatPrice } from '@/utils/formatters'
 
 export const FloatingCartBar = () => {
-  const { totalItems, totalPrice, isOpen, openCart } = useCart()
+  const { totalItems, totalPrice, hasPriceOnRequest, isOpen, openCart } = useCart()
 
   if (totalItems === 0 || isOpen) return null
 
@@ -25,7 +25,9 @@ export const FloatingCartBar = () => {
             <span className="text-[11px] text-baruc-gold/80">
               {totalItems} {totalItems === 1 ? 'item' : 'itens'}
             </span>
-            <span className="text-base font-bold text-white tabular-nums">{formatCurrency(totalPrice)}</span>
+            <span className="text-base font-bold text-white tabular-nums">
+              {hasPriceOnRequest && totalPrice === 0 ? formatPrice(null) : formatCurrency(totalPrice)}
+            </span>
           </span>
         </span>
         <span className="flex items-center gap-1 rounded-xl bg-baruc-gold px-3.5 py-2 text-sm font-bold text-baruc-green">

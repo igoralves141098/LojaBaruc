@@ -3,7 +3,7 @@ import { Check, MessageCircle, ShoppingBag } from 'lucide-react'
 import { useCart } from '@/features/cart/hooks/useCart'
 import type { Product } from '@/features/catalog/types/product.types'
 import { WhatsAppService } from '@/services/whatsapp.service'
-import { calculateDiscountPercent, formatCurrency } from '@/utils/formatters'
+import { calculateDiscountPercent, formatCurrency, formatPrice } from '@/utils/formatters'
 
 interface ProductCardProps {
   product: Product
@@ -13,7 +13,8 @@ const FEEDBACK_DURATION_MS = 1200
 
 const ProductCardComponent = ({ product }: ProductCardProps) => {
   const { addItem } = useCart()
-  const [selectedSize, setSelectedSize] = useState<string>(product.sizes[0] ?? 'Único')
+  const [selectedSize, setSelectedSize] = useState<string>(product.sizes[0] ?? 'P')
+  const [selectedColor, setSelectedColor] = useState<string | undefined>(product.colors[0])
   const [justAdded, setJustAdded] = useState<boolean>(false)
   const timeoutRef = useRef<number | null>(null)
 
@@ -27,7 +28,7 @@ const ProductCardComponent = ({ product }: ProductCardProps) => {
   }, [])
 
   const handleAddToCart = () => {
-    addItem(product, selectedSize, 1)
+    addItem(product, selectedSize, 1, selectedColor)
     setJustAdded(true)
     if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current)
     timeoutRef.current = window.setTimeout(() => setJustAdded(false), FEEDBACK_DURATION_MS)
@@ -88,11 +89,42 @@ const ProductCardComponent = ({ product }: ProductCardProps) => {
         </div>
 
         <div className="flex items-baseline gap-2">
-          <span className="text-xl font-bold text-neutral-900">{formatCurrency(product.price)}</span>
+          <span className={`font-bold ${product.price === null ? 'text-base text-baruc-goldDark' : 'text-xl text-neutral-900'}`}>
+            {formatPrice(product.price)}
+          </span>
           {product.originalPrice !== undefined && discount !== null && (
             <span className="text-sm text-neutral-400 line-through">{formatCurrency(product.originalPrice)}</span>
           )}
         </div>
+
+        {product.colors.length > 0 && (
+          <fieldset disabled={isUnavailable}>
+            <legend className="mb-2 text-xs font-medium text-neutral-500">
+              Cor: <span className="font-semibold text-neutral-800">{selectedColor}</span>
+            </legend>
+            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={`Cores de ${product.name}`}>
+              {product.colors.map((color) => {
+                const isSelected = color === selectedColor
+                return (
+                  <button
+                    key={color}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    onClick={() => setSelectedColor(color)}
+                    className={`inline-flex h-9 items-center justify-center rounded-lg border px-3 text-xs font-semibold transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold ${
+                      isSelected
+                        ? 'border-baruc-green bg-baruc-green text-baruc-gold'
+                        : 'border-neutral-200 bg-white text-neutral-700 hover:border-baruc-gold'
+                    }`}
+                  >
+                    {color}
+                  </button>
+                )
+              })}
+            </div>
+          </fieldset>
+        )}
 
         <fieldset className="mt-auto" disabled={isUnavailable}>
           <legend className="mb-2 text-xs font-medium text-neutral-500">

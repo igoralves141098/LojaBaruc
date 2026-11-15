@@ -1,0 +1,229 @@
+{
+  "$comment": "Edite nome, nicho, preço (null = Sob consulta), cores e tamanhos por pasta de ./Produtos. Use \"items\" para sobrescrever por arquivo (ex.: { \"foto.jpg\": { \"color\": \"Preto\" } }).",
+  "groups": {
+    "Camisa Basica Texturizada": {
+      "name": "Camisa Basica Texturizada",
+      "niche": "Camisas",
+      "description": "Camisa Basica Texturizada BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+      "price": null,
+      "originalPrice": null,
+      "colors": [],
+      "sizes": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "inStock": true,
+      "badge": null
+    },
+    "Camisas Basica Algodão": {
+      "name": "Camisa Basica Algodão",
+      "niche": "Camisas",
+      "description": "Camisa Basica Algodão BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+      "price": null,
+      "originalPrice": null,
+      "colors": [],
+      "sizes": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "inStock": true,
+      "badge": null
+    },
+    "Camisas Gola V": {
+      "name": "Camisa Gola V",
+      "niche": "Camisas",
+      "description": "Camisa Gola V BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+      "price": null,
+      "originalPrice": null,
+      "colors": [],
+      "sizes": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "inStock": true,
+      "badge": null
+    },
+    "Camisas Linho Social": {
+      "name": "Camisa Linho Social",
+      "niche": "Camisas",
+      "description": "Camisa Linho Social BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+      "price": null,
+      "originalPrice": null,
+      "colors": [],
+      "sizes": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "inStock": true,
+      "badge": null
+    },
+    "Camisas Polo": {
+      "name": "Camisa Polo",
+      "niche": "Camisas",
+      "description": "Camisa Polo BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+      "price": null,
+      "originalPrice": null,
+      "colors": [],
+      "sizes": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "inStock": true,
+      "badge": null
+    },
+    "Camisas Polo ziper": {
+      "name": "Camisa Polo ziper",
+      "niche": "Camisas",
+      "description": "Camisa Polo ziper BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+      "price": null,
+      "originalPrice": null,
+      "colors": [],
+      "sizes": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "inStock": true,
+      "badge": null
+    },
+    "Camisas Polo ziper Metalico": {
+      "name": "Camisa Polo ziper Metalico",
+      "niche": "Camisas",
+      "description": "Camisa Polo ziper Metalico BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+      "price": null,
+      "originalPrice": null,
+      "colors": [],
+      "sizes": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "inStock": true,
+      "badge": null
+    },
+    "Camisas Regata": {
+      "name": "Camisa Regata",
+      "niche": "Camisas",
+      "description": "Camisa Regata BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+      "price": null,
+      "originalPrice": null,
+      "colors": [],
+      "sizes": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "inStock": true,
+      "badge": null
+    },
+    "Camisas Texturizada Brisa": {
+      "name": "Camisa Texturizada Brisa",
+      "niche": "Camisas",
+      "description": "Camisa Texturizada Brisa BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+      "price": null,
+      "originalPrice": null,
+      "colors": [],
+      "sizes": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "inStock": true,
+      "badge": null
+    },
+    "Jaqueta": {
+      "name": "Jaqueta",
+      "niche": "Jaqueta",
+      "description": "Jaqueta BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+      "price": null,
+      "originalPrice": null,
+      "colors": [],
+      "sizes": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "inStock": true,
+      "badge": null
+    },
+    "Short Flex": {
+      "name": "Short Flex",
+      "niche": "Shorts",
+      "description": "Short Flex BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+      "price": null,
+      "originalPrice": null,
+      "colors": [],
+      "sizes": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "inStock": true,
+      "badge": null
+    },
+    "Short Linho": {
+      "name": "Short Linho",
+      "niche": "Shorts",
+      "description": "Short Linho BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+      "price": null,
+      "originalPrice": null,
+      "colors": [],
+      "sizes": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "inStock": true,
+      "badge": null
+    },
+    "Short Sarja": {
+      "name": "Short Sarja",
+      "niche": "Shorts",
+      "description": "Short Sarja BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+      "price": null,
+      "originalPrice": null,
+      "colors": [],
+      "sizes": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "inStock": true,
+      "badge": null
+    },
+    "Suéter": {
+      "name": "Suéter",
+      "niche": "Suéter",
+      "description": "Suéter BARUC com acabamento premium e caimento masculino. Disponível do P ao GG.",
+      "price": null,
+      "originalPrice": null,
+      "colors": [],
+      "sizes": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "inStock": true,
+      "badge": null
+    }
+  }
+}

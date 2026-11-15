@@ -1,4 +1,3 @@
-import { fallbackProducts } from '@/features/catalog/data/fallbackProducts'
 import type { Product } from '@/features/catalog/types/product.types'
 
 const PRODUCTS_ENDPOINT = `${import.meta.env.BASE_URL}api/products.json`
@@ -17,18 +16,24 @@ const isProduct = (value: unknown): value is Product => {
     typeof value.sku === 'string' &&
     typeof value.name === 'string' &&
     typeof value.description === 'string' &&
-    typeof value.price === 'number' &&
+    (value.price === null || typeof value.price === 'number') &&
     (value.originalPrice === undefined || typeof value.originalPrice === 'number') &&
     typeof value.imageUrl === 'string' &&
     typeof value.category === 'string' &&
+    typeof value.categorySlug === 'string' &&
+    typeof value.niche === 'string' &&
     isStringArray(value.sizes) &&
     value.sizes.length > 0 &&
+    isStringArray(value.colors) &&
     typeof value.inStock === 'boolean' &&
     (value.badge === undefined || typeof value.badge === 'string')
   )
 }
 
-const cloneFallback = (): Product[] => fallbackProducts.map((product) => ({ ...product, sizes: [...product.sizes] }))
+const resolveImageUrl = (imageUrl: string): string =>
+  /^(https?:)?\/\//.test(imageUrl) || imageUrl.startsWith('/')
+    ? imageUrl
+    : `${import.meta.env.BASE_URL}${imageUrl}`
 
 export const fetchProducts = async (): Promise<Product[]> => {
   const controller = new AbortController()
@@ -50,18 +55,12 @@ export const fetchProducts = async (): Promise<Product[]> => {
       throw new Error('Formato inválido: a resposta não é uma lista de produtos')
     }
 
-    const products = payload.filter(isProduct)
-
-    if (products.length === 0) {
-      throw new Error('Nenhum produto válido encontrado na resposta')
-    }
-
-    return products
+    return payload.filter(isProduct).map((product) => ({ ...product, imageUrl: resolveImageUrl(product.imageUrl) }))
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.warn('[product.service] Usando catálogo de fallback em memória.', error)
+      console.warn('[product.service] Não foi possível carregar o catálogo.', error)
     }
-    return cloneFallback()
+    return []
   } finally {
     window.clearTimeout(timeoutId)
   }
