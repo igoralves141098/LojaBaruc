@@ -1,7 +1,7 @@
 ﻿import { Menu, Phone, Search, ShoppingBag, Truck, X } from 'lucide-react'
 import { BarucLogo } from '@/components/ui/BarucLogo'
 import { InstagramIcon } from '@/components/ui/InstagramIcon'
-import { STORE_INSTAGRAM_HANDLE, STORE_INSTAGRAM_URL } from '@/config/env'
+import { env } from '@/config/env'
 import { useCart } from '@/features/cart/hooks/useCart'
 import { WhatsAppService } from '@/services/whatsapp.service'
 
@@ -21,13 +21,13 @@ export const Header = ({ searchQuery, onSearchChange, onOpenMenu, onGoHome }: He
       <div className="border-b border-baruc-gold/20 bg-baruc-greenDark/95">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-5 gap-y-1 px-4 py-2 text-[11px] font-medium tracking-wide text-neutral-200 sm:justify-between sm:px-6 sm:text-xs lg:px-8">
           <a
-            href={STORE_INSTAGRAM_URL}
+            href={env.instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 transition-colors hover:text-baruc-gold focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
           >
             <InstagramIcon className="h-3.5 w-3.5 text-baruc-gold" aria-hidden="true" />
-            {STORE_INSTAGRAM_HANDLE}
+            {env.instagramHandle}
           </a>
           <a
             href={WhatsAppService.generateGeneralUrl()}
@@ -36,7 +36,7 @@ export const Header = ({ searchQuery, onSearchChange, onOpenMenu, onGoHome }: He
             className="inline-flex items-center gap-1.5 transition-colors hover:text-baruc-gold focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
           >
             <Phone className="h-3.5 w-3.5 text-baruc-gold" aria-hidden="true" />
-            83-99909-1885
+            {env.whatsappDisplay}
           </a>
           <span className="inline-flex items-center gap-1.5 font-semibold text-baruc-gold">
             <Truck className="h-3.5 w-3.5" aria-hidden="true" />

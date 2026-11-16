@@ -19,6 +19,9 @@ dist-ssr/
 .env.*.local
 !.env.example
 
+# Catálogo bruto local (a Vercel usa apenas public/produtos e public/api/products.json)
+/Produtos
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -1,2 +1,0 @@
-NOME: Jaqueta
-PRECO: 299,99

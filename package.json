@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "sync:products": "node scripts/sync-products.mjs",
+    "sync-catalog": "node scripts/sync-products.mjs",
     "predev": "npm run sync:products",
     "dev": "vite",
     "prebuild": "npm run sync:products",
