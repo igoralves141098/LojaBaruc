@@ -1,11 +1,15 @@
-﻿import { Clock, Mail, MapPin, MessageCircle, Phone, Truck } from 'lucide-react'
+﻿import { Clock, Lock, Mail, MapPin, MessageCircle, Phone, Truck } from 'lucide-react'
 import { BarucLogo } from '@/components/ui/BarucLogo'
 import { InstagramIcon } from '@/components/ui/InstagramIcon'
 import { env } from '@/config/env'
 import { EmailService } from '@/services/email.service'
 import { WhatsAppService } from '@/services/whatsapp.service'
 
-export const Footer = () => {
+interface FooterProps {
+  onOpenAdmin?: () => void
+}
+
+export const Footer = ({ onOpenAdmin }: FooterProps) => {
   const currentYear = new Date().getFullYear()
 
   return (
@@ -80,9 +84,19 @@ export const Footer = () => {
       </div>
 
       <div className="border-t border-baruc-gold/15">
-        <p className="mx-auto max-w-7xl px-4 py-5 text-center text-xs tracking-wide text-neutral-400 sm:px-6 lg:px-8">
-          © {currentYear} {env.storeName}. Todos os direitos reservados.
-        </p>
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-5 text-xs tracking-wide text-neutral-400 sm:flex-row sm:px-6 lg:px-8">
+          <p className="text-center sm:text-left">
+            © {currentYear} {env.storeName}. Todos os direitos reservados.
+          </p>
+          <button
+            type="button"
+            onClick={onOpenAdmin}
+            className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 font-medium text-neutral-400 transition-colors hover:text-baruc-gold focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
+          >
+            <Lock className="h-3.5 w-3.5" aria-hidden="true" />
+            Área Restrita
+          </button>
+        </div>
       </div>
     </footer>
   )

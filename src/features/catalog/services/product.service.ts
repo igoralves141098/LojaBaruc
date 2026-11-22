@@ -1,41 +1,24 @@
+import { collection, getDocs, type DocumentData } from 'firebase/firestore'
+import { normalizeProduct } from '@/features/catalog/product-normalizer'
 import type { Product } from '@/features/catalog/types/product.types'
+import { cloudEnabled, db } from '@/services/firebase'
 
 const PRODUCTS_ENDPOINT = `${import.meta.env.BASE_URL}api/products.json`
 const REQUEST_TIMEOUT_MS = 8000
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null
-
-const isStringArray = (value: unknown): value is string[] =>
-  Array.isArray(value) && value.every((item) => typeof item === 'string')
-
-const isProduct = (value: unknown): value is Product => {
-  if (!isRecord(value)) return false
-  return (
-    typeof value.id === 'string' &&
-    typeof value.sku === 'string' &&
-    typeof value.name === 'string' &&
-    typeof value.description === 'string' &&
-    (value.price === null || typeof value.price === 'number') &&
-    (value.originalPrice === undefined || typeof value.originalPrice === 'number') &&
-    typeof value.imageUrl === 'string' &&
-    typeof value.category === 'string' &&
-    typeof value.categorySlug === 'string' &&
-    typeof value.niche === 'string' &&
-    isStringArray(value.sizes) &&
-    value.sizes.length > 0 &&
-    isStringArray(value.colors) &&
-    typeof value.inStock === 'boolean' &&
-    (value.badge === undefined || typeof value.badge === 'string')
-  )
-}
-
-const resolveImageUrl = (imageUrl: string): string =>
-  /^(https?:)?\/\//.test(imageUrl) || imageUrl.startsWith('/')
+const resolveImageUrl = (imageUrl: string): string => {
+  if (imageUrl.length === 0) return imageUrl
+  return /^(https?:)?\/\//.test(imageUrl) || imageUrl.startsWith('/')
     ? imageUrl
     : `${import.meta.env.BASE_URL}${imageUrl}`
+}
 
-export const fetchProducts = async (): Promise<Product[]> => {
+const withResolvedImage = (product: Product): Product => ({
+  ...product,
+  imageUrl: resolveImageUrl(product.imageUrl),
+})
+
+const fetchLocalProducts = async (): Promise<Product[]> => {
   const controller = new AbortController()
   const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
@@ -50,18 +33,87 @@ export const fetchProducts = async (): Promise<Product[]> => {
     }
 
     const payload: unknown = await response.json()
-
     if (!Array.isArray(payload)) {
       throw new Error('Formato inválido: a resposta não é uma lista de produtos')
     }
 
-    return payload.filter(isProduct).map((product) => ({ ...product, imageUrl: resolveImageUrl(product.imageUrl) }))
+    return payload
+      .map((item) => normalizeProduct(item))
+      .filter((product): product is Product => product !== null)
+      .map(withResolvedImage)
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.warn('[product.service] Não foi possível carregar o catálogo.', error)
+      console.warn('[product.service] Não foi possível carregar o catálogo local.', error)
     }
     return []
   } finally {
     window.clearTimeout(timeoutId)
   }
+}
+
+const withTimeout = <T>(promise: Promise<T>, timeoutMs: number): Promise<T> =>
+  new Promise<T>((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error('Tempo esgotado ao consultar o Firestore')), timeoutMs)
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer)
+        resolve(value)
+      },
+      (error) => {
+        window.clearTimeout(timer)
+        reject(error)
+      },
+    )
+  })
+
+interface RemoteCatalog {
+  products: Product[]
+  deletedIds: string[]
+  total: number
+}
+
+const fetchRemoteProducts = async (): Promise<RemoteCatalog> => {
+  if (!cloudEnabled || !db) return { products: [], deletedIds: [], total: 0 }
+
+  try {
+    const snapshot = await withTimeout(getDocs(collection(db, 'products')), REQUEST_TIMEOUT_MS)
+    const products: Product[] = []
+    const deletedIds: string[] = []
+
+    snapshot.forEach((docSnapshot) => {
+      const data: DocumentData = docSnapshot.data()
+      if (data.deleted === true) {
+        deletedIds.push(docSnapshot.id)
+        return
+      }
+      const product = normalizeProduct(data, docSnapshot.id)
+      if (product) products.push(withResolvedImage(product))
+    })
+
+    return { products, deletedIds, total: snapshot.size }
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.warn('[product.service] Firestore indisponível, usando catálogo local.', error)
+    }
+    return { products: [], deletedIds: [], total: 0 }
+  }
+}
+
+export const fetchRemoteCatalog = fetchRemoteProducts
+export const fetchLocalCatalog = fetchLocalProducts
+
+export const fetchProducts = async (): Promise<Product[]> => {
+  const [localProducts, remote] = await Promise.all([fetchLocalProducts(), fetchRemoteProducts()])
+
+  if (remote.total === 0) return localProducts
+
+  const merged = new Map<string, Product>(localProducts.map((product) => [product.id, product]))
+  for (const product of remote.products) {
+    merged.set(product.id, product)
+  }
+  for (const deletedId of remote.deletedIds) {
+    merged.delete(deletedId)
+  }
+
+  return [...merged.values()]
 }

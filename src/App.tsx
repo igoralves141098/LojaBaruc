@@ -1,13 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Footer } from '@/components/layout/Footer'
 import { Header } from '@/components/layout/Header'
 import { SidebarMenu } from '@/components/layout/SidebarMenu'
+import { AdminDashboard } from '@/features/admin/components/AdminDashboard'
 import { CartDrawer } from '@/features/cart/components/CartDrawer'
 import { FloatingCartBar } from '@/features/cart/components/FloatingCartBar'
 import { CartProvider } from '@/features/cart/context/CartContext'
+import { CatalogSearch } from '@/features/catalog/components/CatalogSearch'
 import { CategoryFilter } from '@/features/catalog/components/CategoryFilter'
+import { CuratedShowcase } from '@/features/catalog/components/CuratedShowcase'
+import { ProductDetailModal } from '@/features/catalog/components/ProductDetailModal'
 import { ProductGrid } from '@/features/catalog/components/ProductGrid'
 import { useCatalog } from '@/features/catalog/hooks/useCatalog'
+import type { Product } from '@/features/catalog/types/product.types'
 
 const Storefront = () => {
   const {
@@ -19,10 +24,36 @@ const Storefront = () => {
     setSearchQuery,
     selectedCategory,
     setSelectedCategory,
+    isShowcaseMode,
     clearFilters,
   } = useCatalog()
 
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false)
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false)
+
+  useEffect(() => {
+    const syncFromHash = () => {
+      if (window.location.hash === '#admin') setIsAdminOpen(true)
+    }
+    syncFromHash()
+    window.addEventListener('hashchange', syncFromHash)
+    return () => window.removeEventListener('hashchange', syncFromHash)
+  }, [])
+
+  const openAdmin = () => {
+    setIsAdminOpen(true)
+    if (window.location.hash !== '#admin') {
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#admin`)
+    }
+  }
+
+  const closeAdmin = () => {
+    setIsAdminOpen(false)
+    if (window.location.hash === '#admin') {
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`)
+    }
+  }
 
   const resultLabel = isLoading
     ? 'Carregando coleção...'
@@ -62,20 +93,37 @@ const Storefront = () => {
               Estilo que <em className="font-semibold italic text-baruc-goldDark">define</em>
             </h1>
             <p className="text-sm text-neutral-500" aria-live="polite">
-              {resultLabel}
+              {isShowcaseMode ? 'Seleção curada · escolha uma categoria' : resultLabel}
             </p>
           </div>
           <div className="mt-1 h-px w-16 bg-baruc-gold" aria-hidden="true" />
         </section>
 
+        <CatalogSearch value={searchQuery} onChange={setSearchQuery} />
+
         <CategoryFilter selectedCategory={selectedCategory} onSelect={setSelectedCategory} />
 
-        <ProductGrid products={filteredProducts} isLoading={isLoading} onClearFilters={clearFilters} />
+        {isShowcaseMode && !isLoading && products.length > 0 ? (
+          <CuratedShowcase
+            products={products}
+            onSelectCategory={(category) => setSelectedCategory(category)}
+            onOpenProduct={setSelectedProduct}
+          />
+        ) : (
+          <ProductGrid
+            products={filteredProducts}
+            isLoading={isLoading}
+            onClearFilters={clearFilters}
+            onProductClick={setSelectedProduct}
+          />
+        )}
       </main>
 
-      <Footer />
+      <Footer onOpenAdmin={openAdmin} />
       <FloatingCartBar />
       <CartDrawer />
+      <ProductDetailModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      {isAdminOpen && <AdminDashboard onClose={closeAdmin} />}
     </div>
   )
 }

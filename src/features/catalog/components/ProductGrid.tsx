@@ -1,4 +1,4 @@
-import { RotateCcw, SearchX } from 'lucide-react'
+﻿import { RotateCcw, SearchX } from 'lucide-react'
 import { ProductCard } from '@/features/catalog/components/ProductCard'
 import type { Product } from '@/features/catalog/types/product.types'
 
@@ -6,6 +6,7 @@ interface ProductGridProps {
   products: Product[]
   isLoading: boolean
   onClearFilters: () => void
+  onProductClick?: (product: Product) => void
 }
 
 const SKELETON_COUNT = 8
@@ -28,7 +29,7 @@ const ProductCardSkeleton = () => (
   </div>
 )
 
-export const ProductGrid = ({ products, isLoading, onClearFilters }: ProductGridProps) => {
+export const ProductGrid = ({ products, isLoading, onClearFilters, onProductClick }: ProductGridProps) => {
   if (isLoading) {
     return (
       <ul
@@ -71,9 +72,10 @@ export const ProductGrid = ({ products, isLoading, onClearFilters }: ProductGrid
     <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
       {products.map((product) => (
         <li key={product.id}>
-          <ProductCard product={product} />
+          <ProductCard product={product} onOpenDetails={onProductClick} />
         </li>
       ))}
     </ul>
   )
 }
+

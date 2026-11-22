@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { CartContext } from '@/features/cart/context/cart-context'
 import type { CartContextType, CartItem } from '@/features/cart/types/cart.types'
+import { getStock } from '@/features/catalog/stock'
 import type { Product } from '@/features/catalog/types/product.types'
 
 const STORAGE_KEY = '@BarucMasculina:cart-v2'
@@ -8,6 +9,11 @@ const MAX_QUANTITY_PER_ITEM = 99
 
 const isSameLine = (item: CartItem, productId: string, size: string, color?: string): boolean =>
   item.product.id === productId && item.selectedSize === size && (item.selectedColor ?? '') === (color ?? '')
+
+const getProductTotal = (items: CartItem[], productId: string): number =>
+  items
+    .filter((item) => item.product.id === productId)
+    .reduce((total, item) => total + item.quantity, 0)
 
 const clampQuantity = (quantity: number): number =>
   Math.min(MAX_QUANTITY_PER_ITEM, Math.max(1, Math.floor(quantity)))
@@ -76,17 +82,26 @@ export const CartProvider = ({ children }: CartProviderProps) => {
   const closeCart = useCallback(() => setIsOpen(false), [])
 
   const addItem = useCallback((product: Product, size: string, quantity: number = 1, color?: string) => {
+    const stock = getStock(product)
+    if (stock <= 0) return
+
     const safeQuantity = clampQuantity(quantity)
     setItems((current) => {
+      const currentTotal = getProductTotal(current, product.id)
+      const remaining = stock - currentTotal
+      if (remaining <= 0) return current
+
+      const quantityToAdd = Math.min(safeQuantity, remaining)
       const existing = current.find((item) => isSameLine(item, product.id, size, color))
+
       if (existing) {
         return current.map((item) =>
           isSameLine(item, product.id, size, color)
-            ? { ...item, product, quantity: clampQuantity(item.quantity + safeQuantity) }
+            ? { ...item, product, quantity: clampQuantity(item.quantity + quantityToAdd) }
             : item,
         )
       }
-      return [...current, { product, selectedSize: size, selectedColor: color, quantity: safeQuantity }]
+      return [...current, { product, selectedSize: size, selectedColor: color, quantity: quantityToAdd }]
     })
   }, [])
 
@@ -97,8 +112,20 @@ export const CartProvider = ({ children }: CartProviderProps) => {
   const updateQuantity = useCallback((productId: string, size: string, quantity: number, color?: string) => {
     setItems((current) => {
       if (quantity <= 0) return current.filter((item) => !isSameLine(item, productId, size, color))
+
+      const line = current.find((item) => isSameLine(item, productId, size, color))
+      if (!line) return current
+
+      const stock = getStock(line.product)
+      const otherLinesTotal = current
+        .filter((item) => item.product.id === productId && !isSameLine(item, productId, size, color))
+        .reduce((total, item) => total + item.quantity, 0)
+      const maxForLine = stock - otherLinesTotal
+      if (maxForLine <= 0) return current
+
+      const nextQuantity = Math.min(clampQuantity(quantity), maxForLine)
       return current.map((item) =>
-        isSameLine(item, productId, size, color) ? { ...item, quantity: clampQuantity(quantity) } : item,
+        isSameLine(item, productId, size, color) ? { ...item, quantity: nextQuantity } : item,
       )
     })
   }, [])

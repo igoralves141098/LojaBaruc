@@ -66,6 +66,7 @@ export interface UseCatalogResult {
   selectedCategory: CategoryFilterValue
   setSelectedCategory: (category: CategoryFilterValue) => void
   hasActiveFilters: boolean
+  isShowcaseMode: boolean
   clearFilters: () => void
 }
 
@@ -145,11 +146,30 @@ export const useCatalog = (): UseCatalogResult => {
       if (query.length === 0) return true
 
       const haystack = normalize(
-        `${product.name} ${product.description} ${product.sku} ${product.category} ${product.niche} ${getMacroCategory(product.category)} ${product.colors.join(' ')} ${product.badge ?? ''}`,
+        [
+          product.name,
+          product.description,
+          product.fullDescription ?? '',
+          product.sku,
+          product.category,
+          product.niche,
+          getMacroCategory(product.category),
+          product.colors.join(' '),
+          product.sizes.join(' '),
+          product.badge ?? '',
+          product.technicalSheet?.fabric ?? '',
+          product.technicalSheet?.fit ?? '',
+          product.technicalSheet?.composition ?? '',
+          product.technicalSheet?.origin ?? '',
+          product.technicalSheet?.care ?? '',
+          (product.specifications ?? []).join(' '),
+        ].join(' '),
       )
       return haystack.includes(query)
     })
   }, [products, deferredQuery, selectedCategory])
+
+  const isShowcaseMode = selectedCategory === ALL_CATEGORIES && searchQuery.trim().length === 0
 
   const clearFilters = useCallback(() => {
     setSearchQuery('')
@@ -167,6 +187,7 @@ export const useCatalog = (): UseCatalogResult => {
     selectedCategory,
     setSelectedCategory,
     hasActiveFilters: searchQuery.trim().length > 0 || !isAllSelection(selectedCategory),
+    isShowcaseMode,
     clearFilters,
   }
 }

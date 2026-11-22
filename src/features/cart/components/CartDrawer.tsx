@@ -1,7 +1,8 @@
-import { useEffect, useId, useRef, useState } from 'react'
+﻿import { useEffect, useId, useRef, useState } from 'react'
 import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react'
 import { useCart } from '@/features/cart/hooks/useCart'
 import type { CartItem } from '@/features/cart/types/cart.types'
+import { getStock } from '@/features/catalog/stock'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import { WhatsAppService } from '@/services/whatsapp.service'
 import { formatCurrency, formatPrice } from '@/utils/formatters'
@@ -14,12 +15,14 @@ type DeliveryType = (typeof DELIVERY_TYPES)[number]
 
 interface CartLineProps {
   item: CartItem
+  canIncrement: boolean
+  maxStock: number
   onIncrement: () => void
   onDecrement: () => void
   onRemove: () => void
 }
 
-const CartLine = ({ item, onIncrement, onDecrement, onRemove }: CartLineProps) => {
+const CartLine = ({ item, canIncrement, maxStock, onIncrement, onDecrement, onRemove }: CartLineProps) => {
   const { product, selectedSize, selectedColor, quantity } = item
 
   return (
@@ -74,8 +77,9 @@ const CartLine = ({ item, onIncrement, onDecrement, onRemove }: CartLineProps) =
             <button
               type="button"
               onClick={onIncrement}
-              aria-label="Aumentar quantidade"
-              className="flex h-10 w-10 items-center justify-center rounded-r-xl text-baruc-green transition-colors hover:bg-neutral-100 active:scale-95"
+              disabled={!canIncrement}
+              aria-label={canIncrement ? 'Aumentar quantidade' : `Limite de estoque atingido, máximo de ${maxStock} unidades`}
+              className="flex h-10 w-10 items-center justify-center rounded-r-xl text-baruc-green transition-colors hover:bg-neutral-100 active:scale-95 disabled:cursor-not-allowed disabled:text-neutral-300 disabled:hover:bg-transparent"
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
             </button>
@@ -89,6 +93,11 @@ const CartLine = ({ item, onIncrement, onDecrement, onRemove }: CartLineProps) =
             )}
           </div>
         </div>
+        {!canIncrement && (
+          <p className="mt-1.5 text-[11px] font-semibold text-amber-600">
+            Limite de estoque atingido (máx. {maxStock} un.)
+          </p>
+        )}
       </div>
     </li>
   )
@@ -216,15 +225,24 @@ export const CartDrawer = () => {
               </div>
 
               <ul className="flex flex-col gap-3">
-                {items.map((item) => (
-                  <CartLine
-                    key={`${item.product.id}-${item.selectedSize}-${item.selectedColor ?? ''}`}
-                    item={item}
-                    onIncrement={() => updateQuantity(item.product.id, item.selectedSize, item.quantity + 1, item.selectedColor)}
-                    onDecrement={() => updateQuantity(item.product.id, item.selectedSize, item.quantity - 1, item.selectedColor)}
-                    onRemove={() => removeItem(item.product.id, item.selectedSize, item.selectedColor)}
-                  />
-                ))}
+                {items.map((item) => {
+                  const productTotal = items
+                    .filter((line) => line.product.id === item.product.id)
+                    .reduce((total, line) => total + line.quantity, 0)
+                  const maxStock = getStock(item.product)
+
+                  return (
+                    <CartLine
+                      key={`${item.product.id}-${item.selectedSize}-${item.selectedColor ?? ''}`}
+                      item={item}
+                      canIncrement={productTotal < maxStock}
+                      maxStock={maxStock}
+                      onIncrement={() => updateQuantity(item.product.id, item.selectedSize, item.quantity + 1, item.selectedColor)}
+                      onDecrement={() => updateQuantity(item.product.id, item.selectedSize, item.quantity - 1, item.selectedColor)}
+                      onRemove={() => removeItem(item.product.id, item.selectedSize, item.selectedColor)}
+                    />
+                  )
+                })}
               </ul>
 
               <section className="mt-5 flex flex-col gap-4 rounded-2xl border border-baruc-gold/30 bg-white p-4">

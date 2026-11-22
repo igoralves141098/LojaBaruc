@@ -1,17 +1,19 @@
 import { memo, useEffect, useRef, useState } from 'react'
 import { Check, MessageCircle, ShoppingBag } from 'lucide-react'
 import { useCart } from '@/features/cart/hooks/useCart'
+import { getStock, isLowStock, isOutOfStock } from '@/features/catalog/stock'
 import type { Product } from '@/features/catalog/types/product.types'
 import { WhatsAppService } from '@/services/whatsapp.service'
 import { calculateDiscountPercent, formatCurrency } from '@/utils/formatters'
 
 interface ProductCardProps {
   product: Product
+  onOpenDetails?: (product: Product) => void
 }
 
 const FEEDBACK_DURATION_MS = 1200
 
-const ProductCardComponent = ({ product }: ProductCardProps) => {
+const ProductCardComponent = ({ product, onOpenDetails }: ProductCardProps) => {
   const { addItem } = useCart()
   const [selectedSize, setSelectedSize] = useState<string>(product.sizes[0] ?? 'P')
   const [selectedColor, setSelectedColor] = useState<string | undefined>(product.colors[0])
@@ -19,7 +21,9 @@ const ProductCardComponent = ({ product }: ProductCardProps) => {
   const timeoutRef = useRef<number | null>(null)
 
   const discount = calculateDiscountPercent(product.price, product.originalPrice)
-  const isUnavailable = !product.inStock
+  const stock = getStock(product)
+  const isUnavailable = isOutOfStock(product)
+  const lowStock = isLowStock(product)
 
   useEffect(() => {
     return () => {
@@ -36,7 +40,12 @@ const ProductCardComponent = ({ product }: ProductCardProps) => {
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm transition-shadow duration-300 hover:shadow-xl">
-      <div className="relative aspect-square overflow-hidden bg-neutral-100">
+      <button
+        type="button"
+        onClick={() => onOpenDetails?.(product)}
+        aria-label={`Ver detalhes de ${product.name}`}
+        className="relative block aspect-square w-full overflow-hidden bg-neutral-100 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-baruc-gold"
+      >
         <img
           src={product.imageUrl}
           alt={product.name}
@@ -71,7 +80,7 @@ const ProductCardComponent = ({ product }: ProductCardProps) => {
             </span>
           </div>
         )}
-      </div>
+      </button>
 
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex items-center justify-between gap-2">
@@ -82,9 +91,15 @@ const ProductCardComponent = ({ product }: ProductCardProps) => {
         </div>
 
         <div className="flex flex-col gap-1">
-          <h3 className="line-clamp-2 font-serif text-xl font-semibold leading-tight text-baruc-green">
-            {product.name}
-          </h3>
+          <button
+            type="button"
+            onClick={() => onOpenDetails?.(product)}
+            className="text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
+          >
+            <h3 className="line-clamp-2 font-serif text-xl font-semibold leading-tight text-baruc-green">
+              {product.name}
+            </h3>
+          </button>
           <p className="line-clamp-2 text-sm leading-relaxed text-neutral-500">{product.description}</p>
         </div>
 
@@ -96,6 +111,13 @@ const ProductCardComponent = ({ product }: ProductCardProps) => {
             <span className="text-sm text-neutral-400 line-through">{formatCurrency(product.originalPrice)}</span>
           )}
         </div>
+
+        {lowStock && (
+          <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-600">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden="true" />
+            Últimas {stock} {stock === 1 ? 'unidade' : 'unidades'}
+          </p>
+        )}
 
         {product.colors.length > 0 && (
           <fieldset disabled={isUnavailable}>
