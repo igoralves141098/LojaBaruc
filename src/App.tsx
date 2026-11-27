@@ -6,6 +6,7 @@ import { AdminDashboard } from '@/features/admin/components/AdminDashboard'
 import { CartDrawer } from '@/features/cart/components/CartDrawer'
 import { FloatingCartBar } from '@/features/cart/components/FloatingCartBar'
 import { CartProvider } from '@/features/cart/context/CartContext'
+import { CustomerAuthProvider } from '@/features/customers/context/CustomerAuthContext'
 import { CatalogSearch } from '@/features/catalog/components/CatalogSearch'
 import { CategoryFilter } from '@/features/catalog/components/CategoryFilter'
 import { CuratedShowcase } from '@/features/catalog/components/CuratedShowcase'
@@ -129,9 +130,11 @@ const Storefront = () => {
 }
 
 const App = () => (
-  <CartProvider>
-    <Storefront />
-  </CartProvider>
+  <CustomerAuthProvider>
+    <CartProvider>
+      <Storefront />
+    </CartProvider>
+  </CustomerAuthProvider>
 )
 
 export default App

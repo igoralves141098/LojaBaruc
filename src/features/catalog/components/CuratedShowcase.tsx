@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { ArrowRight, Eye } from 'lucide-react'
+import { ProductColorPicker } from '@/features/catalog/components/ProductColorPicker'
 import { getMacroCategory, MACRO_CATEGORIES, type MacroCategory } from '@/features/catalog/hooks/useCatalog'
 import { isOutOfStock } from '@/features/catalog/stock'
 import type { Product } from '@/features/catalog/types/product.types'
@@ -16,6 +18,10 @@ interface ShowcaseCardProps {
 }
 
 const ShowcaseCard = ({ product, onOpen }: ShowcaseCardProps) => {
+  const variants = product.variants ?? []
+  const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(variants[0]?.id)
+  const selectedVariant = variants.find((variant) => variant.id === selectedVariantId)
+  const displayImage = selectedVariant?.imageUrl || product.imageUrl
   const outOfStock = isOutOfStock(product)
 
   return (
@@ -27,7 +33,7 @@ const ShowcaseCard = ({ product, onOpen }: ShowcaseCardProps) => {
         className="relative block aspect-[4/5] overflow-hidden bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-baruc-gold"
       >
         <img
-          src={product.imageUrl}
+          src={displayImage}
           alt={product.name}
           loading="lazy"
           decoding="async"
@@ -55,6 +61,17 @@ const ShowcaseCard = ({ product, onOpen }: ShowcaseCardProps) => {
           </h4>
         </button>
         <p className="font-bold text-neutral-900">{formatCurrency(product.price ?? 0)}</p>
+
+        {variants.length > 0 && (
+          <div className="mt-1">
+            <ProductColorPicker
+              variants={variants}
+              selectedId={selectedVariantId}
+              onSelect={(variant) => setSelectedVariantId(variant.id)}
+            />
+          </div>
+        )}
+
         <button
           type="button"
           onClick={onOpen}

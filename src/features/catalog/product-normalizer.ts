@@ -1,6 +1,12 @@
-import type { Product, ProductTechnicalSheet } from '@/features/catalog/types/product.types'
+import type {
+  Product,
+  ProductColorVariant,
+  ProductSizeStock,
+  ProductTechnicalSheet,
+} from '@/features/catalog/types/product.types'
 
 export const DEFAULT_STOCK = 10
+export const DEFAULT_VARIANT_COLOR = '#C5A059'
 
 const normalizeKey = (value: string): string =>
   value
@@ -35,7 +41,71 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
 
 const toStringArray = (value: unknown): string[] =>
-  Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0) : []
+  Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+    : []
+
+const normalizeVariantStock = (value: unknown): number => {
+  if (value === undefined || value === null) return 0
+  if (typeof value === 'number' && Number.isFinite(value)) return Math.max(0, Math.floor(value))
+  if (typeof value === 'string') {
+    const parsed = Number.parseInt(value, 10)
+    if (Number.isFinite(parsed)) return Math.max(0, parsed)
+  }
+  return 0
+}
+
+const normalizeVariantSizes = (value: unknown): ProductSizeStock[] => {
+  const sizes: ProductSizeStock[] = []
+
+  const pushSize = (size: unknown, stock: unknown): void => {
+    if (typeof size !== 'string' || size.trim().length === 0) return
+    const normalizedSize = size.trim()
+    if (sizes.some((entry) => entry.size === normalizedSize)) return
+    sizes.push({ size: normalizedSize, stock: normalizeVariantStock(stock) })
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      if (isRecord(item)) {
+        pushSize(item.size, item.stock)
+      } else if (typeof item === 'string') {
+        pushSize(item, 0)
+      }
+    }
+    return sizes
+  }
+
+  if (isRecord(value)) {
+    for (const [size, stock] of Object.entries(value)) {
+      pushSize(size, stock)
+    }
+  }
+
+  return sizes
+}
+
+const toVariants = (value: unknown): ProductColorVariant[] => {
+  if (!Array.isArray(value)) return []
+
+  const variants: ProductColorVariant[] = []
+  value.forEach((item, index) => {
+    if (!isRecord(item)) return
+    const colorName = typeof item.colorName === 'string' ? item.colorName.trim() : ''
+    if (colorName.length === 0) return
+    const colorHex =
+      typeof item.colorHex === 'string' && item.colorHex.trim().length > 0
+        ? item.colorHex.trim()
+        : DEFAULT_VARIANT_COLOR
+    const imageUrl = typeof item.imageUrl === 'string' ? item.imageUrl.trim() : ''
+    const id =
+      typeof item.id === 'string' && item.id.trim().length > 0
+        ? item.id.trim()
+        : `variant-${index}-${slugify(colorName) || 'cor'}`
+    variants.push({ id, colorName, colorHex, imageUrl, sizes: normalizeVariantSizes(item.sizes) })
+  })
+  return variants
+}
 
 const toTechnicalSheet = (value: unknown): ProductTechnicalSheet | undefined => {
   if (!isRecord(value)) return undefined
@@ -48,6 +118,9 @@ const toTechnicalSheet = (value: unknown): ProductTechnicalSheet | undefined => 
   }
   return Object.values(sheet).some((entry) => typeof entry === 'string' && entry.length > 0) ? sheet : undefined
 }
+
+export const getVariantStock = (variant: Pick<ProductColorVariant, 'sizes'>): number =>
+  variant.sizes.reduce((total, entry) => total + normalizeVariantStock(entry.stock), 0)
 
 export const normalizeProduct = (raw: unknown, fallbackId?: string): Product | null => {
   if (!isRecord(raw)) return null
@@ -69,7 +142,11 @@ export const normalizeProduct = (raw: unknown, fallbackId?: string): Product | n
 
   const price = raw.price === null || raw.price === undefined ? null : Number(raw.price)
   const originalPrice = raw.originalPrice === undefined ? undefined : Number(raw.originalPrice)
-  const stock = normalizeStock(raw.stock)
+  const variants = toVariants(raw.variants)
+  const variantColors = variants.map((variant) => variant.colorName)
+  const variantSizes = variants.flatMap((variant) => variant.sizes.map((entry) => entry.size))
+  const rootStock = normalizeStock(raw.stock)
+  const stock = variants.length > 0 ? variants.reduce((total, variant) => total + getVariantStock(variant), 0) : rootStock
   const sizes = toStringArray(raw.sizes)
   const colors = toStringArray(raw.colors)
   const specifications = toStringArray(raw.specifications)
@@ -89,10 +166,16 @@ export const normalizeProduct = (raw: unknown, fallbackId?: string): Product | n
         ? raw.categorySlug.trim()
         : '') || slugify(category),
     niche,
-    sizes: sizes.length > 0 ? sizes : ['P', 'M', 'G', 'GG'],
-    colors,
+    sizes:
+      variants.length > 0 && variantSizes.length > 0
+        ? Array.from(new Set(variantSizes))
+        : sizes.length > 0
+          ? sizes
+          : ['P', 'M', 'G', 'GG'],
+    colors: variants.length > 0 ? variantColors : colors,
     inStock: stock > 0,
     stock,
+    variants: variants.length > 0 ? variants : undefined,
     fullDescription:
       typeof raw.fullDescription === 'string' && raw.fullDescription.trim().length > 0
         ? raw.fullDescription

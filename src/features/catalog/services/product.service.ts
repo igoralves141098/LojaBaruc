@@ -8,7 +8,10 @@ const REQUEST_TIMEOUT_MS = 8000
 
 const resolveImageUrl = (imageUrl: string): string => {
   if (imageUrl.length === 0) return imageUrl
-  return /^(https?:)?\/\//.test(imageUrl) || imageUrl.startsWith('/')
+  return /^(https?:)?\/\//.test(imageUrl) ||
+    imageUrl.startsWith('/') ||
+    imageUrl.startsWith('data:') ||
+    imageUrl.startsWith('blob:')
     ? imageUrl
     : `${import.meta.env.BASE_URL}${imageUrl}`
 }
@@ -16,6 +19,10 @@ const resolveImageUrl = (imageUrl: string): string => {
 const withResolvedImage = (product: Product): Product => ({
   ...product,
   imageUrl: resolveImageUrl(product.imageUrl),
+  variants: product.variants?.map((variant) => ({
+    ...variant,
+    imageUrl: resolveImageUrl(variant.imageUrl),
+  })),
 })
 
 const fetchLocalProducts = async (): Promise<Product[]> => {

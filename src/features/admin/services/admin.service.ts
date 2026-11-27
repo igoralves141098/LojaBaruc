@@ -31,6 +31,16 @@ export const toFirestoreProduct = (product: Product): DocumentData => ({
   colors: product.colors,
   inStock: product.stock > 0,
   stock: product.stock,
+  variants:
+    product.variants && product.variants.length > 0
+      ? product.variants.map((variant) => ({
+          id: variant.id,
+          colorName: variant.colorName,
+          colorHex: variant.colorHex,
+          imageUrl: variant.imageUrl,
+          sizes: variant.sizes.map((entry) => ({ size: entry.size, stock: entry.stock })),
+        }))
+      : null,
   technicalSheet: product.technicalSheet
     ? {
         fabric: product.technicalSheet.fabric ?? null,

@@ -1,8 +1,11 @@
-﻿import { Menu, Phone, Search, ShoppingBag, Truck, X } from 'lucide-react'
+﻿import { useState } from 'react'
+import { LogOut, Menu, Phone, Search, ShoppingBag, Truck, UserRound, X } from 'lucide-react'
 import { BarucLogo } from '@/components/ui/BarucLogo'
 import { InstagramIcon } from '@/components/ui/InstagramIcon'
 import { env } from '@/config/env'
 import { useCart } from '@/features/cart/hooks/useCart'
+import { CustomerAuthModal } from '@/features/customers/components/CustomerAuthModal'
+import { useCustomerAuth } from '@/features/customers/hooks/useCustomerAuth'
 import { WhatsAppService } from '@/services/whatsapp.service'
 
 interface HeaderProps {
@@ -14,7 +17,11 @@ interface HeaderProps {
 
 export const Header = ({ searchQuery, onSearchChange, onOpenMenu, onGoHome }: HeaderProps) => {
   const { totalItems, openCart } = useCart()
+  const { user, customer, signOut } = useCustomerAuth()
+  const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false)
   const badgeLabel = totalItems > 99 ? '99+' : String(totalItems)
+  const displayName = (customer?.fullName || user?.displayName || '').trim()
+  const firstName = displayName.split(/\s+/)[0] ?? ''
 
   return (
     <header className="sticky top-0 z-30 border-b border-baruc-gold/25 bg-baruc-green text-white shadow-md">
@@ -99,24 +106,54 @@ export const Header = ({ searchQuery, onSearchChange, onOpenMenu, onGoHome }: He
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={openCart}
-          aria-label={`Abrir carrinho com ${totalItems} ${totalItems === 1 ? 'item' : 'itens'}`}
-          className="relative inline-flex min-h-[44px] items-center gap-2 justify-self-end rounded-xl border border-baruc-gold/50 bg-baruc-greenLight/60 px-3.5 text-sm font-semibold text-baruc-gold transition-colors hover:bg-baruc-gold hover:text-baruc-green active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold focus-visible:ring-offset-2 focus-visible:ring-offset-baruc-green sm:px-4"
-        >
-          <ShoppingBag className="h-5 w-5" aria-hidden="true" />
-          <span className="hidden sm:inline">Carrinho</span>
-          {totalItems > 0 && (
-            <span
-              aria-hidden="true"
-              className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-baruc-green bg-baruc-gold px-1.5 text-xs font-bold text-baruc-green"
+        <div className="flex items-center justify-self-end gap-1.5 sm:gap-2">
+          {user ? (
+            <div className="flex items-center gap-1.5 rounded-xl border border-baruc-gold/40 bg-baruc-greenLight/40 px-2 sm:px-3">
+              <UserRound className="h-4 w-4 text-baruc-gold" aria-hidden="true" />
+              <span className="hidden max-w-[110px] truncate text-xs font-semibold text-baruc-gold sm:inline">
+                Olá, {firstName || 'cliente'}
+              </span>
+              <button
+                type="button"
+                onClick={() => void signOut()}
+                aria-label="Sair da conta"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-baruc-gold transition-colors hover:bg-baruc-greenLight active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
+              >
+                <LogOut className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsAuthOpen(true)}
+              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-baruc-gold/40 bg-baruc-greenLight/40 px-2.5 text-xs font-semibold text-baruc-gold transition-colors hover:bg-baruc-gold hover:text-baruc-green active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold focus-visible:ring-offset-2 focus-visible:ring-offset-baruc-green sm:px-3.5 sm:text-sm"
             >
-              {badgeLabel}
-            </span>
+              <UserRound className="h-5 w-5" aria-hidden="true" />
+              <span className="hidden sm:inline">Entrar / Cadastrar</span>
+            </button>
           )}
-        </button>
+
+          <button
+            type="button"
+            onClick={openCart}
+            aria-label={`Abrir carrinho com ${totalItems} ${totalItems === 1 ? 'item' : 'itens'}`}
+            className="relative inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-baruc-gold/50 bg-baruc-greenLight/60 px-3.5 text-sm font-semibold text-baruc-gold transition-colors hover:bg-baruc-gold hover:text-baruc-green active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold focus-visible:ring-offset-2 focus-visible:ring-offset-baruc-green sm:px-4"
+          >
+            <ShoppingBag className="h-5 w-5" aria-hidden="true" />
+            <span className="hidden sm:inline">Carrinho</span>
+            {totalItems > 0 && (
+              <span
+                aria-hidden="true"
+                className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-baruc-green bg-baruc-gold px-1.5 text-xs font-bold text-baruc-green"
+              >
+                {badgeLabel}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
+
+      {isAuthOpen && <CustomerAuthModal onClose={() => setIsAuthOpen(false)} />}
     </header>
   )
 }

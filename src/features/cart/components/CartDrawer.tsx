@@ -3,6 +3,7 @@ import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react'
 import { useCart } from '@/features/cart/hooks/useCart'
 import type { CartItem } from '@/features/cart/types/cart.types'
 import { getStock } from '@/features/catalog/stock'
+import { useCustomerAuth } from '@/features/customers/hooks/useCustomerAuth'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import { WhatsAppService } from '@/services/whatsapp.service'
 import { formatCurrency, formatPrice } from '@/utils/formatters'
@@ -118,7 +119,8 @@ export const CartDrawer = () => {
     hasPriceOnRequest,
   } = useCart()
 
-  const [customerName, setCustomerName] = useState<string>('')
+  const { customer } = useCustomerAuth()
+  const [customerName, setCustomerName] = useState<string | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('')
   const [deliveryType, setDeliveryType] = useState<DeliveryType | ''>('')
   const closeButtonRef = useRef<HTMLButtonElement>(null)
@@ -126,6 +128,8 @@ export const CartDrawer = () => {
   const nameInputId = useId()
 
   useBodyScrollLock(isOpen)
+
+  const effectiveCustomerName = customerName ?? customer?.fullName ?? ''
 
   useEffect(() => {
     if (!isOpen) return
@@ -146,7 +150,7 @@ export const CartDrawer = () => {
     totalDiscount,
     totalPrice,
     hasPriceOnRequest,
-    customerName,
+    customerName: effectiveCustomerName,
     paymentMethod,
     deliveryType,
   })
@@ -259,7 +263,7 @@ export const CartDrawer = () => {
                     autoCapitalize="words"
                     enterKeyHint="done"
                     maxLength={60}
-                    value={customerName}
+                    value={effectiveCustomerName}
                     onChange={(event) => setCustomerName(event.target.value)}
                     placeholder="Como devemos te chamar?"
                     className="h-11 w-full rounded-xl border border-neutral-200 bg-baruc-cream px-3.5 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-baruc-gold focus:outline-none focus:ring-2 focus:ring-baruc-gold/25"

@@ -1,8 +1,14 @@
 import { memo, useEffect, useRef, useState } from 'react'
 import { Check, MessageCircle, ShoppingBag } from 'lucide-react'
 import { useCart } from '@/features/cart/hooks/useCart'
-import { getStock, isLowStock, isOutOfStock } from '@/features/catalog/stock'
-import type { Product } from '@/features/catalog/types/product.types'
+import { ProductColorPicker } from '@/features/catalog/components/ProductColorPicker'
+import { getStock, getVariantStock, isOutOfStock } from '@/features/catalog/stock'
+import type { Product, ProductColorVariant } from '@/features/catalog/types/product.types'
+import {
+  buildVariantProduct,
+  getFirstAvailableSize,
+  getVariantAvailableSizes,
+} from '@/features/catalog/variant-utils'
 import { WhatsAppService } from '@/services/whatsapp.service'
 import { calculateDiscountPercent, formatCurrency } from '@/utils/formatters'
 
@@ -15,15 +21,27 @@ const FEEDBACK_DURATION_MS = 1200
 
 const ProductCardComponent = ({ product, onOpenDetails }: ProductCardProps) => {
   const { addItem } = useCart()
+  const variants = product.variants ?? []
+  const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(variants[0]?.id)
   const [selectedSize, setSelectedSize] = useState<string>(product.sizes[0] ?? 'P')
   const [selectedColor, setSelectedColor] = useState<string | undefined>(product.colors[0])
   const [justAdded, setJustAdded] = useState<boolean>(false)
   const timeoutRef = useRef<number | null>(null)
 
+  const selectedVariant = variants.find((variant) => variant.id === selectedVariantId)
+  const displayImage = selectedVariant?.imageUrl || product.imageUrl
+  const selectedColorName = selectedVariant?.colorName ?? selectedColor
+  const colorStock = selectedVariant ? getVariantStock(selectedVariant) : getStock(product)
+  const totalStock = getStock(product)
+
   const discount = calculateDiscountPercent(product.price, product.originalPrice)
-  const stock = getStock(product)
   const isUnavailable = isOutOfStock(product)
-  const lowStock = isLowStock(product)
+  const isColorUnavailable = colorStock <= 0
+  const lowStock = colorStock > 0 && colorStock <= 3
+
+  const sizeOptions = selectedVariant
+    ? selectedVariant.sizes.map((entry) => ({ size: entry.size, stock: entry.stock }))
+    : product.sizes.map((size) => ({ size, stock: totalStock }))
 
   useEffect(() => {
     return () => {
@@ -31,12 +49,23 @@ const ProductCardComponent = ({ product, onOpenDetails }: ProductCardProps) => {
     }
   }, [])
 
+  const handleSelectVariant = (variant: ProductColorVariant) => {
+    setSelectedVariantId(variant.id)
+    setSelectedSize(getFirstAvailableSize(variant, variant.sizes[0]?.size ?? product.sizes[0] ?? 'P'))
+  }
+
   const handleAddToCart = () => {
-    addItem(product, selectedSize, 1, selectedColor)
+    if (colorStock <= 0) return
+    const cartProduct = buildVariantProduct(product, selectedVariant)
+    addItem(cartProduct, selectedSize, 1, selectedColorName)
     setJustAdded(true)
     if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current)
     timeoutRef.current = window.setTimeout(() => setJustAdded(false), FEEDBACK_DURATION_MS)
   }
+
+  const unavailableForWhatsApp = buildVariantProduct(product, selectedVariant)
+  const hasAvailableSizeForColor =
+    selectedVariant === undefined || getVariantAvailableSizes(selectedVariant).length > 0
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm transition-shadow duration-300 hover:shadow-xl">
@@ -47,7 +76,7 @@ const ProductCardComponent = ({ product, onOpenDetails }: ProductCardProps) => {
         className="relative block aspect-square w-full overflow-hidden bg-neutral-100 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-baruc-gold"
       >
         <img
-          src={product.imageUrl}
+          src={displayImage}
           alt={product.name}
           loading="lazy"
           decoding="async"
@@ -115,37 +144,46 @@ const ProductCardComponent = ({ product, onOpenDetails }: ProductCardProps) => {
         {lowStock && (
           <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-600">
             <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden="true" />
-            Últimas {stock} {stock === 1 ? 'unidade' : 'unidades'}
+            Últimas {colorStock} {colorStock === 1 ? 'unidade' : 'unidades'}
           </p>
         )}
 
-        {product.colors.length > 0 && (
-          <fieldset disabled={isUnavailable}>
-            <legend className="mb-2 text-xs font-medium text-neutral-500">
-              Cor: <span className="font-semibold text-neutral-800">{selectedColor}</span>
-            </legend>
-            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={`Cores de ${product.name}`}>
-              {product.colors.map((color) => {
-                const isSelected = color === selectedColor
-                return (
-                  <button
-                    key={color}
-                    type="button"
-                    role="radio"
-                    aria-checked={isSelected}
-                    onClick={() => setSelectedColor(color)}
-                    className={`inline-flex h-9 items-center justify-center rounded-lg border px-3 text-xs font-semibold transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold ${
-                      isSelected
-                        ? 'border-baruc-green bg-baruc-green text-baruc-gold'
-                        : 'border-neutral-200 bg-white text-neutral-700 hover:border-baruc-gold'
-                    }`}
-                  >
-                    {color}
-                  </button>
-                )
-              })}
-            </div>
-          </fieldset>
+        {variants.length > 0 ? (
+          <ProductColorPicker
+            variants={variants}
+            selectedId={selectedVariantId}
+            onSelect={handleSelectVariant}
+            disabled={isUnavailable}
+          />
+        ) : (
+          product.colors.length > 0 && (
+            <fieldset disabled={isUnavailable}>
+              <legend className="mb-2 text-xs font-medium text-neutral-500">
+                Cor: <span className="font-semibold text-neutral-800">{selectedColor}</span>
+              </legend>
+              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={`Cores de ${product.name}`}>
+                {product.colors.map((color) => {
+                  const isSelected = color === selectedColor
+                  return (
+                    <button
+                      key={color}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      onClick={() => setSelectedColor(color)}
+                      className={`inline-flex h-9 items-center justify-center rounded-lg border px-3 text-xs font-semibold transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold ${
+                        isSelected
+                          ? 'border-baruc-green bg-baruc-green text-baruc-gold'
+                          : 'border-neutral-200 bg-white text-neutral-700 hover:border-baruc-gold'
+                      }`}
+                    >
+                      {color}
+                    </button>
+                  )
+                })}
+              </div>
+            </fieldset>
+          )
         )}
 
         <fieldset className="mt-auto" disabled={isUnavailable}>
@@ -153,16 +191,18 @@ const ProductCardComponent = ({ product, onOpenDetails }: ProductCardProps) => {
             Tamanho: <span className="font-semibold text-neutral-800">{selectedSize}</span>
           </legend>
           <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={`Tamanhos de ${product.name}`}>
-            {product.sizes.map((size) => {
+            {sizeOptions.map(({ size, stock: sizeStock }) => {
               const isSelected = size === selectedSize
+              const isSizeUnavailable = sizeStock <= 0
               return (
                 <button
                   key={size}
                   type="button"
                   role="radio"
                   aria-checked={isSelected}
+                  disabled={isSizeUnavailable}
                   onClick={() => setSelectedSize(size)}
-                  className={`inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold ${
+                  className={`inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:line-through focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold ${
                     isSelected
                       ? 'border-baruc-green bg-baruc-green text-baruc-gold'
                       : 'border-neutral-200 bg-white text-neutral-700 hover:border-baruc-gold'
@@ -175,15 +215,15 @@ const ProductCardComponent = ({ product, onOpenDetails }: ProductCardProps) => {
           </div>
         </fieldset>
 
-        {isUnavailable ? (
+        {isUnavailable || isColorUnavailable || !hasAvailableSizeForColor ? (
           <a
-            href={WhatsAppService.generateAvailabilityUrl(product)}
+            href={WhatsAppService.generateAvailabilityUrl(unavailableForWhatsApp)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-baruc-gold/60 bg-baruc-goldLight px-4 text-sm font-semibold text-baruc-green transition-all hover:bg-baruc-gold/30 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold focus-visible:ring-offset-2"
           >
             <MessageCircle className="h-5 w-5" aria-hidden="true" />
-            Avise-me na reposição
+            {isUnavailable ? 'Avise-me na reposição' : 'Consultar esta cor no WhatsApp'}
           </a>
         ) : (
           <button

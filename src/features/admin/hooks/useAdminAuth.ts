@@ -7,6 +7,12 @@ import {
 } from 'firebase/auth'
 import { auth } from '@/services/firebase'
 
+export const ADMIN_EMAIL = 'loja.baruccg@gmail.com'
+const ADMIN_DENIED_MESSAGE = 'Esta conta não possui acesso administrativo.'
+
+const isAdminUser = (user: User | null): boolean =>
+  user?.email?.trim().toLowerCase() === ADMIN_EMAIL
+
 export interface AdminAuthState {
   user: User | null
   isLoading: boolean
@@ -42,10 +48,16 @@ export const useAdminAuth = (): AdminAuthState => {
 
   useEffect(() => {
     if (!auth) return
+    const authInstance = auth
 
     const unsubscribe = onAuthStateChanged(
-      auth,
+      authInstance,
       (nextUser) => {
+        if (nextUser && !isAdminUser(nextUser)) {
+          setUser(null)
+          setIsLoading(false)
+          return
+        }
         setUser(nextUser)
         setIsLoading(false)
       },
@@ -61,8 +73,13 @@ export const useAdminAuth = (): AdminAuthState => {
   const signIn = useCallback(async (email: string, password: string) => {
     if (!auth) throw new Error('Firebase Auth não configurado.')
     try {
-      await signInWithEmailAndPassword(auth, email.trim(), password)
+      const credential = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password)
+      if (!isAdminUser(credential.user)) {
+        await firebaseSignOut(auth)
+        throw new Error(ADMIN_DENIED_MESSAGE)
+      }
     } catch (error) {
+      if (error instanceof Error && error.message === ADMIN_DENIED_MESSAGE) throw error
       throw new Error(mapAuthError(error), { cause: error })
     }
   }, [])

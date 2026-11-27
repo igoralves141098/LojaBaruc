@@ -1,8 +1,15 @@
 ﻿import { useEffect, useId, useRef, useState } from 'react'
 import { Check, MessageCircle, ShoppingBag, X } from 'lucide-react'
 import { useCart } from '@/features/cart/hooks/useCart'
-import { getStock, getStockLevel } from '@/features/catalog/stock'
-import type { Product, ProductTechnicalSheet } from '@/features/catalog/types/product.types'
+import { ProductColorPicker } from '@/features/catalog/components/ProductColorPicker'
+import { getStock, getStockLevel, getVariantStock } from '@/features/catalog/stock'
+import type { Product, ProductColorVariant, ProductTechnicalSheet } from '@/features/catalog/types/product.types'
+import {
+  buildVariantProduct,
+  getFirstAvailableSize,
+  getVariantAvailableSizes,
+  getVariantSku,
+} from '@/features/catalog/variant-utils'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import { WhatsAppService } from '@/services/whatsapp.service'
 import { calculateDiscountPercent, formatCurrency } from '@/utils/formatters'
@@ -32,9 +39,16 @@ const FEEDBACK_DURATION_MS = 1400
 
 const ProductDetailModalContent = ({ product, onClose }: { product: Product; onClose: () => void }) => {
   const { addItem } = useCart()
+  const variants = product.variants ?? []
+  const initialVariant = variants[0]
   const [activeTab, setActiveTab] = useState<DetailTab>('description')
-  const [selectedSize, setSelectedSize] = useState<string>(() => product.sizes[0] ?? 'P')
+  const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(initialVariant?.id)
   const [selectedColor, setSelectedColor] = useState<string | undefined>(() => product.colors[0])
+  const [selectedSize, setSelectedSize] = useState<string>(() =>
+    initialVariant
+      ? getFirstAvailableSize(initialVariant, product.sizes[0] ?? 'P')
+      : product.sizes[0] ?? 'P',
+  )
   const [justAdded, setJustAdded] = useState<boolean>(false)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const timeoutRef = useRef<number | null>(null)
@@ -60,22 +74,44 @@ const ProductDetailModalContent = ({ product, onClose }: { product: Product; onC
     }
   }, [])
 
-  const stock = getStock(product)
+  const selectedVariant = variants.find((variant) => variant.id === selectedVariantId)
+  const displayImage = selectedVariant?.imageUrl || product.imageUrl
+  const selectedColorName = selectedVariant?.colorName ?? selectedColor
+  const displaySku = selectedVariant ? getVariantSku(product, selectedVariant) : product.sku
+
+  const totalStock = getStock(product)
+  const stock = selectedVariant ? getVariantStock(selectedVariant) : totalStock
   const stockLevel = getStockLevel(stock)
-  const isOutOfStock = stock <= 0
+  const isProductOutOfStock = totalStock <= 0
+  const isColorOutOfStock = stock <= 0
   const discount = calculateDiscountPercent(product.price, product.originalPrice)
   const technicalEntries = TECHNICAL_LABELS.filter(({ key }) => {
     const value = product.technicalSheet?.[key]
     return typeof value === 'string' && value.trim().length > 0
   })
 
+  const sizeOptions = selectedVariant
+    ? selectedVariant.sizes.map((entry) => ({ size: entry.size, stock: entry.stock }))
+    : product.sizes.map((size) => ({ size, stock: totalStock }))
+
+  const hasAvailableSizeForColor =
+    selectedVariant === undefined || getVariantAvailableSizes(selectedVariant).length > 0
+
+  const handleSelectVariant = (variant: ProductColorVariant) => {
+    setSelectedVariantId(variant.id)
+    setSelectedSize(getFirstAvailableSize(variant, variant.sizes[0]?.size ?? product.sizes[0] ?? 'P'))
+  }
+
   const handleAddToCart = () => {
-    if (isOutOfStock) return
-    addItem(product, selectedSize, 1, selectedColor)
+    if (stock <= 0 || !hasAvailableSizeForColor) return
+    const cartProduct = buildVariantProduct(product, selectedVariant)
+    addItem(cartProduct, selectedSize, 1, selectedColorName)
     setJustAdded(true)
     if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current)
     timeoutRef.current = window.setTimeout(() => setJustAdded(false), FEEDBACK_DURATION_MS)
   }
+
+  const unavailableForWhatsApp = buildVariantProduct(product, selectedVariant)
 
   const stockBadgeClass =
     stockLevel === 'out'
@@ -86,7 +122,9 @@ const ProductDetailModalContent = ({ product, onClose }: { product: Product; onC
 
   const stockText =
     stockLevel === 'out'
-      ? 'Esgotado'
+      ? selectedVariant
+        ? 'Esgotado nesta cor'
+        : 'Esgotado'
       : stockLevel === 'low'
         ? `Últimas ${stock} ${stock === 1 ? 'unidade' : 'unidades'}`
         : `Restam ${stock} unidades`
@@ -114,13 +152,13 @@ const ProductDetailModalContent = ({ product, onClose }: { product: Product; onC
         <div className="no-scrollbar grid flex-1 overflow-y-auto overscroll-contain pb-[calc(1rem+env(safe-area-inset-bottom))] sm:grid-cols-2 sm:pb-0">
           <div className="relative bg-neutral-100">
             <img
-              src={product.imageUrl}
+              src={displayImage}
               alt={product.name}
               width={900}
               height={1100}
               className="h-64 w-full object-cover sm:h-full sm:max-h-[92dvh]"
             />
-            {discount !== null && !isOutOfStock && (
+            {discount !== null && !isProductOutOfStock && (
               <span className="absolute left-4 top-[calc(1rem+env(safe-area-inset-top))] rounded-full bg-baruc-gold px-3 py-1 text-xs font-bold text-baruc-green shadow sm:top-4">
                 -{discount}%
               </span>
@@ -136,7 +174,7 @@ const ProductDetailModalContent = ({ product, onClose }: { product: Product; onC
                 {product.name}
               </h2>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span className="font-mono text-[11px] text-neutral-400">SKU: {product.sku}</span>
+                <span className="font-mono text-[11px] text-neutral-400">SKU: {displaySku}</span>
                 <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${stockBadgeClass}`}>
                   {stockText}
                 </span>
@@ -150,50 +188,61 @@ const ProductDetailModalContent = ({ product, onClose }: { product: Product; onC
               )}
             </div>
 
-            {product.colors.length > 0 && (
-              <fieldset disabled={isOutOfStock}>
-                <legend className="mb-2 text-xs font-medium text-neutral-500">
-                  Cor: <span className="font-semibold text-neutral-800">{selectedColor}</span>
-                </legend>
-                <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={`Cores de ${product.name}`}>
-                  {product.colors.map((color) => {
-                    const isSelected = color === selectedColor
-                    return (
-                      <button
-                        key={color}
-                        type="button"
-                        role="radio"
-                        aria-checked={isSelected}
-                        onClick={() => setSelectedColor(color)}
-                        className={`inline-flex h-9 items-center justify-center rounded-lg border px-3 text-xs font-semibold transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold ${
-                          isSelected
-                            ? 'border-baruc-green bg-baruc-green text-baruc-gold'
-                            : 'border-neutral-200 bg-white text-neutral-700 hover:border-baruc-gold'
-                        }`}
-                      >
-                        {color}
-                      </button>
-                    )
-                  })}
-                </div>
-              </fieldset>
+            {variants.length > 0 ? (
+              <ProductColorPicker
+                variants={variants}
+                selectedId={selectedVariantId}
+                onSelect={handleSelectVariant}
+                disabled={isProductOutOfStock}
+              />
+            ) : (
+              product.colors.length > 0 && (
+                <fieldset disabled={isProductOutOfStock}>
+                  <legend className="mb-2 text-xs font-medium text-neutral-500">
+                    Cor: <span className="font-semibold text-neutral-800">{selectedColor}</span>
+                  </legend>
+                  <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={`Cores de ${product.name}`}>
+                    {product.colors.map((color) => {
+                      const isSelected = color === selectedColor
+                      return (
+                        <button
+                          key={color}
+                          type="button"
+                          role="radio"
+                          aria-checked={isSelected}
+                          onClick={() => setSelectedColor(color)}
+                          className={`inline-flex h-9 items-center justify-center rounded-lg border px-3 text-xs font-semibold transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold ${
+                            isSelected
+                              ? 'border-baruc-green bg-baruc-green text-baruc-gold'
+                              : 'border-neutral-200 bg-white text-neutral-700 hover:border-baruc-gold'
+                          }`}
+                        >
+                          {color}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </fieldset>
+              )
             )}
 
-            <fieldset disabled={isOutOfStock}>
+            <fieldset disabled={isProductOutOfStock}>
               <legend className="mb-2 text-xs font-medium text-neutral-500">
                 Tamanho: <span className="font-semibold text-neutral-800">{selectedSize}</span>
               </legend>
               <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={`Tamanhos de ${product.name}`}>
-                {product.sizes.map((size) => {
+                {sizeOptions.map(({ size, stock: sizeStock }) => {
                   const isSelected = size === selectedSize
+                  const isSizeUnavailable = sizeStock <= 0
                   return (
                     <button
                       key={size}
                       type="button"
                       role="radio"
                       aria-checked={isSelected}
+                      disabled={isSizeUnavailable}
                       onClick={() => setSelectedSize(size)}
-                      className={`inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold ${
+                      className={`inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:line-through focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold ${
                         isSelected
                           ? 'border-baruc-green bg-baruc-green text-baruc-gold'
                           : 'border-neutral-200 bg-white text-neutral-700 hover:border-baruc-gold'
@@ -206,15 +255,15 @@ const ProductDetailModalContent = ({ product, onClose }: { product: Product; onC
               </div>
             </fieldset>
 
-            {isOutOfStock ? (
+            {isProductOutOfStock || isColorOutOfStock || !hasAvailableSizeForColor ? (
               <a
-                href={WhatsAppService.generateAvailabilityUrl(product)}
+                href={WhatsAppService.generateAvailabilityUrl(unavailableForWhatsApp)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border border-baruc-gold/60 bg-baruc-goldLight px-4 text-sm font-semibold text-baruc-green transition-all hover:bg-baruc-gold/30 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
               >
                 <MessageCircle className="h-5 w-5" aria-hidden="true" />
-                Consultar reposição no WhatsApp
+                {isProductOutOfStock ? 'Consultar reposição no WhatsApp' : 'Consultar esta cor no WhatsApp'}
               </a>
             ) : (
               <button
@@ -314,5 +363,3 @@ export const ProductDetailModal = ({ product, onClose }: ProductDetailModalProps
   if (!product) return null
   return <ProductDetailModalContent key={product.id} product={product} onClose={onClose} />
 }
-
-
