@@ -1,6 +1,8 @@
 ﻿import { useEffect, useId, useRef, useState } from 'react'
 import { Check, MessageCircle, ShoppingBag, X } from 'lucide-react'
 import { useCart } from '@/features/cart/hooks/useCart'
+import { LOGIN_REQUIRED_FOR_CART_MESSAGE } from '@/features/customers/context/customer-context'
+import { useCustomerAuth } from '@/features/customers/hooks/useCustomerAuth'
 import { ProductColorPicker } from '@/features/catalog/components/ProductColorPicker'
 import { getStock, getStockLevel, getVariantStock } from '@/features/catalog/stock'
 import type { Product, ProductColorVariant, ProductTechnicalSheet } from '@/features/catalog/types/product.types'
@@ -39,6 +41,7 @@ const FEEDBACK_DURATION_MS = 1400
 
 const ProductDetailModalContent = ({ product, onClose }: { product: Product; onClose: () => void }) => {
   const { addItem } = useCart()
+  const { user, openAuthModal } = useCustomerAuth()
   const variants = product.variants ?? []
   const initialVariant = variants[0]
   const [activeTab, setActiveTab] = useState<DetailTab>('description')
@@ -103,6 +106,10 @@ const ProductDetailModalContent = ({ product, onClose }: { product: Product; onC
   }
 
   const handleAddToCart = () => {
+    if (!user) {
+      openAuthModal(LOGIN_REQUIRED_FOR_CART_MESSAGE)
+      return
+    }
     if (stock <= 0 || !hasAvailableSizeForColor) return
     const cartProduct = buildVariantProduct(product, selectedVariant)
     addItem(cartProduct, selectedSize, 1, selectedColorName)

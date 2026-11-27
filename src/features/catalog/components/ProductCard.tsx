@@ -1,6 +1,8 @@
 import { memo, useEffect, useRef, useState } from 'react'
 import { Check, MessageCircle, ShoppingBag } from 'lucide-react'
 import { useCart } from '@/features/cart/hooks/useCart'
+import { LOGIN_REQUIRED_FOR_CART_MESSAGE } from '@/features/customers/context/customer-context'
+import { useCustomerAuth } from '@/features/customers/hooks/useCustomerAuth'
 import { ProductColorPicker } from '@/features/catalog/components/ProductColorPicker'
 import { getStock, getVariantStock, isOutOfStock } from '@/features/catalog/stock'
 import type { Product, ProductColorVariant } from '@/features/catalog/types/product.types'
@@ -21,6 +23,7 @@ const FEEDBACK_DURATION_MS = 1200
 
 const ProductCardComponent = ({ product, onOpenDetails }: ProductCardProps) => {
   const { addItem } = useCart()
+  const { user, openAuthModal } = useCustomerAuth()
   const variants = product.variants ?? []
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(variants[0]?.id)
   const [selectedSize, setSelectedSize] = useState<string>(product.sizes[0] ?? 'P')
@@ -55,6 +58,10 @@ const ProductCardComponent = ({ product, onOpenDetails }: ProductCardProps) => {
   }
 
   const handleAddToCart = () => {
+    if (!user) {
+      openAuthModal(LOGIN_REQUIRED_FOR_CART_MESSAGE)
+      return
+    }
     if (colorStock <= 0) return
     const cartProduct = buildVariantProduct(product, selectedVariant)
     addItem(cartProduct, selectedSize, 1, selectedColorName)

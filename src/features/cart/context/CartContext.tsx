@@ -49,6 +49,10 @@ const readStoredCart = (): CartItem[] => {
 
 const writeStoredCart = (items: CartItem[]): void => {
   try {
+    if (items.length === 0) {
+      window.localStorage.removeItem(STORAGE_KEY)
+      return
+    }
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
   } catch {
     return
@@ -131,7 +135,14 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     })
   }, [])
 
-  const clearCart = useCallback(() => setItems([]), [])
+  const clearCart = useCallback(() => {
+    try {
+      window.localStorage.removeItem(STORAGE_KEY)
+    } catch (error) {
+      void error
+    }
+    setItems([])
+  }, [])
 
   const totals = useMemo(() => {
     return items.reduce(

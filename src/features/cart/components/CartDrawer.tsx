@@ -200,6 +200,8 @@ export const CartDrawer = () => {
         deliveryMethod: (deliveryType || 'Entrega') as OrderDeliveryMethod,
       })
 
+      clearCart()
+
       const url = WhatsAppService.generateCartCheckoutUrl({
         items,
         subtotal,

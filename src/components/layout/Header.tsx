@@ -5,7 +5,6 @@ import { InstagramIcon } from '@/components/ui/InstagramIcon'
 import { env } from '@/config/env'
 import { useCart } from '@/features/cart/hooks/useCart'
 import { CustomerAccountModal } from '@/features/customers/components/CustomerAccountModal'
-import { CustomerAuthModal } from '@/features/customers/components/CustomerAuthModal'
 import { useCustomerAuth } from '@/features/customers/hooks/useCustomerAuth'
 import { WhatsAppService } from '@/services/whatsapp.service'
 
@@ -18,8 +17,7 @@ interface HeaderProps {
 
 export const Header = ({ searchQuery, onSearchChange, onOpenMenu, onGoHome }: HeaderProps) => {
   const { totalItems, openCart } = useCart()
-  const { user, customer, signOut, needsProfile } = useCustomerAuth()
-  const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false)
+  const { user, customer, signOut, openAuthModal } = useCustomerAuth()
   const [isAccountOpen, setIsAccountOpen] = useState<boolean>(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState<boolean>(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
@@ -178,7 +176,7 @@ export const Header = ({ searchQuery, onSearchChange, onOpenMenu, onGoHome }: He
           ) : (
             <button
               type="button"
-              onClick={() => setIsAuthOpen(true)}
+              onClick={() => openAuthModal()}
               className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-baruc-gold/40 bg-baruc-greenLight/40 px-2.5 text-xs font-semibold text-baruc-gold transition-colors hover:bg-baruc-gold hover:text-baruc-green active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold focus-visible:ring-offset-2 focus-visible:ring-offset-baruc-green sm:px-3.5 sm:text-sm"
             >
               <UserRound className="h-5 w-5" aria-hidden="true" />
@@ -205,13 +203,6 @@ export const Header = ({ searchQuery, onSearchChange, onOpenMenu, onGoHome }: He
           </button>
         </div>
       </div>
-
-      {(isAuthOpen || needsProfile) && (
-        <CustomerAuthModal
-          key={needsProfile ? 'complete-profile' : 'auth'}
-          onClose={() => setIsAuthOpen(false)}
-        />
-      )}
 
       {isAccountOpen && user && (
         <CustomerAccountModal onClose={() => setIsAccountOpen(false)} />

@@ -34,6 +34,7 @@ export const CustomerAuthModal = ({ onClose }: CustomerAuthModalProps) => {
     user,
     canResend,
     resendCooldown,
+    authModalReason,
   } = useCustomerAuth()
   const isCompleting = needsProfile
   const isVerifying = needsEmailVerification
@@ -254,6 +255,12 @@ export const CustomerAuthModal = ({ onClose }: CustomerAuthModalProps) => {
         )}
 
         <form onSubmit={handleSubmit} className="no-scrollbar flex flex-1 flex-col gap-3.5 overflow-y-auto overscroll-contain p-5">
+          {authModalReason && (
+            <p role="status" className="rounded-xl border border-baruc-gold/40 bg-baruc-goldLight px-3.5 py-3 text-sm font-medium text-baruc-green">
+              {authModalReason}
+            </p>
+          )}
+
           {!isConfigured && (
             <p className="rounded-xl border border-amber-300 bg-amber-50 px-3.5 py-3 text-xs font-medium text-amber-800">
               Firebase não configurado. Defina as chaves VITE_FIREBASE_* no ambiente.
@@ -465,6 +472,16 @@ export const CustomerAuthModal = ({ onClose }: CustomerAuthModalProps) => {
                   ? 'Entrar'
                   : 'Criar conta'}
           </button>
+
+          {!user && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="min-h-[38px] w-full rounded-xl px-4 text-xs font-medium text-neutral-400 transition-colors hover:bg-baruc-cream hover:text-baruc-green focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
+            >
+              Continuar navegando sem login
+            </button>
+          )}
         </form>
       </div>
     </div>

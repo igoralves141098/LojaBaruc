@@ -19,7 +19,7 @@ import { importProducts, isAdminCloudReady, subscribeProducts } from '@/features
 import { fetchLocalCatalog } from '@/features/catalog/services/product.service'
 import { getStock } from '@/features/catalog/stock'
 import type { Product } from '@/features/catalog/types/product.types'
-import { subscribeCustomers } from '@/features/customers/services/customer.service'
+import { deleteCustomer, subscribeCustomers } from '@/features/customers/services/customer.service'
 import type { Customer } from '@/features/customers/types/customer.types'
 import { formatDateBR, formatDateTimeBR, onlyDigits, toWhatsAppLink } from '@/features/customers/utils/customer.utils'
 import { confirmOrderPayment, deleteOrder, subscribeAllOrders } from '@/features/orders/order.service'
@@ -56,6 +56,7 @@ export const AdminDashboard = ({ onClose }: AdminDashboardProps) => {
   const [orderSearch, setOrderSearch] = useState('')
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null)
 
   const cloudReady = isAdminCloudReady()
 
@@ -138,6 +139,20 @@ export const AdminDashboard = ({ onClose }: AdminDashboardProps) => {
     try { await deleteOrder(orderId) }
     catch (e) { setOrdersError(e instanceof Error ? e.message : 'Falha ao excluir pedido.') }
     finally { setDeletingId(null) }
+  }
+
+  const handleDeleteCustomer = async (customer: Customer) => {
+    if (!window.confirm(`Excluir o cliente ${customer.fullName}? Esta ação não pode ser desfeita.`)) return
+    setDeletingCustomerId(customer.uid)
+    setCustomersError('')
+    try {
+      await deleteCustomer(customer.uid)
+      setCustomers((current) => current.filter((item) => item.uid !== customer.uid))
+    } catch (e) {
+      setCustomersError(e instanceof Error ? e.message : 'Falha ao excluir cliente.')
+    } finally {
+      setDeletingCustomerId(null)
+    }
   }
 
   const handleGoToStore = () => {
@@ -245,7 +260,7 @@ export const AdminDashboard = ({ onClose }: AdminDashboardProps) => {
                         <th className="px-4 py-3 font-semibold">Nome</th><th className="px-4 py-3 font-semibold">E-mail</th>
                         <th className="px-4 py-3 font-semibold">CPF</th><th className="px-4 py-3 font-semibold">Nascimento</th>
                         <th className="px-4 py-3 font-semibold">Telefone</th><th className="px-4 py-3 font-semibold">Cadastro</th>
-                        <th className="px-4 py-3 text-right font-semibold">WhatsApp</th>
+                        <th className="px-4 py-3 text-right font-semibold">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -257,7 +272,21 @@ export const AdminDashboard = ({ onClose }: AdminDashboardProps) => {
                           <td className="px-4 py-3 text-neutral-600">{formatDateBR(c.birthDate)}</td>
                           <td className="px-4 py-3 text-neutral-600">{c.phone}</td>
                           <td className="px-4 py-3 text-neutral-600">{formatDateTimeBR(c.createdAt)}</td>
-                          <td className="px-4 py-3 text-right"><CustomerWhatsAppButton customer={c} /></td>
+                          <td className="px-4 py-3 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <CustomerWhatsAppButton customer={c} />
+                              <button
+                                type="button"
+                                onClick={() => void handleDeleteCustomer(c)}
+                                disabled={deletingCustomerId === c.uid}
+                                aria-label={`Excluir cliente ${c.fullName}`}
+                                className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2.5 text-xs font-semibold text-red-700 transition-colors hover:border-red-400 hover:bg-red-100 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                {deletingCustomerId === c.uid ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Trash2 className="h-4 w-4" aria-hidden="true" />}
+                                Excluir
+                              </button>
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>

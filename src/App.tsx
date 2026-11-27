@@ -6,7 +6,9 @@ import { AdminDashboard } from '@/features/admin/components/AdminDashboard'
 import { CartDrawer } from '@/features/cart/components/CartDrawer'
 import { FloatingCartBar } from '@/features/cart/components/FloatingCartBar'
 import { CartProvider } from '@/features/cart/context/CartContext'
+import { CustomerAuthModal } from '@/features/customers/components/CustomerAuthModal'
 import { CustomerAuthProvider } from '@/features/customers/context/CustomerAuthContext'
+import { useCustomerAuth } from '@/features/customers/hooks/useCustomerAuth'
 import { CatalogSearch } from '@/features/catalog/components/CatalogSearch'
 import { CategoryFilter } from '@/features/catalog/components/CategoryFilter'
 import { CuratedShowcase } from '@/features/catalog/components/CuratedShowcase'
@@ -29,6 +31,7 @@ const Storefront = () => {
     clearFilters,
   } = useCatalog()
 
+  const { isAuthModalOpen, needsProfile, closeAuthModal } = useCustomerAuth()
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false)
@@ -125,16 +128,22 @@ const Storefront = () => {
       <CartDrawer />
       <ProductDetailModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
       {isAdminOpen && <AdminDashboard onClose={closeAdmin} />}
+      {(isAuthModalOpen || needsProfile) && (
+        <CustomerAuthModal
+          key={needsProfile ? 'complete-profile' : 'auth'}
+          onClose={closeAuthModal}
+        />
+      )}
     </div>
   )
 }
 
 const App = () => (
-  <CustomerAuthProvider>
-    <CartProvider>
+  <CartProvider>
+    <CustomerAuthProvider>
       <Storefront />
-    </CartProvider>
-  </CustomerAuthProvider>
+    </CustomerAuthProvider>
+  </CartProvider>
 )
 
 export default App

@@ -8,6 +8,7 @@ import {
   updateProfile,
   type User,
 } from 'firebase/auth'
+import { useCart } from '@/features/cart/hooks/useCart'
 import { CustomerAuthContext, type CustomerAuthContextValue } from '@/features/customers/context/customer-context'
 import {
   saveCustomerProfile,
@@ -23,6 +24,7 @@ import { auth } from '@/services/firebase'
 
 const ADMIN_EMAIL = 'loja.baruccg@gmail.com'
 const RESEND_COOLDOWN_MS = 30_000
+const WELCOME_MODAL_SEEN_KEY = 'baruc_welcome_modal_seen'
 
 type ProfileStatus = 'idle' | 'loading' | 'found' | 'missing' | 'error'
 
@@ -69,8 +71,11 @@ export const CustomerAuthProvider = ({ children }: CustomerAuthProviderProps) =>
   const [isLoading, setIsLoading] = useState<boolean>(auth !== null)
   const [error, setError] = useState<string>('')
   const [resendCooldown, setResendCooldown] = useState<number>(0)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false)
+  const [authModalReason, setAuthModalReason] = useState<string>('')
   const signupInProgressRef = useRef<boolean>(false)
   const isConfigured = auth !== null
+  const { clearCart, closeCart } = useCart()
 
   useEffect(() => {
     if (!auth) return
@@ -137,6 +142,38 @@ export const CustomerAuthProvider = ({ children }: CustomerAuthProviderProps) =>
       return () => window.clearInterval(timer)
     }
   }, [resendCooldown])
+
+  const openAuthModal = useCallback((reasonMessage?: string) => {
+    setAuthModalReason(reasonMessage ?? '')
+    setIsAuthModalOpen(true)
+  }, [])
+
+  const closeAuthModal = useCallback(() => {
+    setIsAuthModalOpen(false)
+    setAuthModalReason('')
+  }, [])
+
+  useEffect(() => {
+    if (isLoading || user) return
+
+    let alreadySeen = false
+    try {
+      alreadySeen = window.sessionStorage.getItem(WELCOME_MODAL_SEEN_KEY) === '1'
+    } catch (error) {
+      void error
+    }
+    if (alreadySeen) return
+
+    const timer = window.setTimeout(() => {
+      try {
+        window.sessionStorage.setItem(WELCOME_MODAL_SEEN_KEY, '1')
+      } catch (error) {
+        void error
+      }
+      openAuthModal()
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [isLoading, user, openAuthModal])
 
   const needsProfile =
     user !== null && !isAdminEmail(user.email) && profileStatus === 'missing'
@@ -241,10 +278,13 @@ export const CustomerAuthProvider = ({ children }: CustomerAuthProviderProps) =>
     if (!auth) return
     setError('')
     await firebaseSignOut(auth)
+    clearCart()
+    closeCart()
     setCustomer(null)
     setProfileStatus('idle')
     setResendCooldown(0)
-  }, [])
+    openAuthModal()
+  }, [clearCart, closeCart, openAuthModal])
 
     const refreshCustomer = useCallback(async () => {
     if (!auth?.currentUser) return
@@ -261,6 +301,10 @@ export const CustomerAuthProvider = ({ children }: CustomerAuthProviderProps) =>
       error,
       needsProfile,
       needsEmailVerification,
+      isAuthModalOpen,
+      authModalReason,
+      openAuthModal,
+      closeAuthModal,
       signIn,
       signUp,
       completeProfile,
@@ -279,6 +323,10 @@ export const CustomerAuthProvider = ({ children }: CustomerAuthProviderProps) =>
       error,
       needsProfile,
       needsEmailVerification,
+      isAuthModalOpen,
+      authModalReason,
+      openAuthModal,
+      closeAuthModal,
       signIn,
       signUp,
       completeProfile,

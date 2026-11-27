@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteDoc,
   doc,
   onSnapshot,
   serverTimestamp,
@@ -131,6 +132,11 @@ export const updateCustomerProfile = async (
     },
     { merge: true },
   )
+}
+
+export const deleteCustomer = async (uid: string): Promise<void> => {
+  if (!db) throw new Error('Firebase não configurado.')
+  await deleteDoc(doc(db, CUSTOMERS_COLLECTION, uid))
 }
 
 export const updateCustomerVerification = async (

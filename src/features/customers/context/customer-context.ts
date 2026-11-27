@@ -6,6 +6,9 @@ import type {
   CustomerSignUpInput,
 } from '@/features/customers/types/customer.types'
 
+export const LOGIN_REQUIRED_FOR_CART_MESSAGE =
+  'Faça login ou cadastre-se para adicionar peças ao carrinho e finalizar sua compra.'
+
 export interface CustomerAuthContextValue {
   user: User | null
   customer: Customer | null
@@ -14,6 +17,10 @@ export interface CustomerAuthContextValue {
   error: string
   needsProfile: boolean
   needsEmailVerification: boolean
+  isAuthModalOpen: boolean
+  authModalReason: string
+  openAuthModal: (reasonMessage?: string) => void
+  closeAuthModal: () => void
   signIn: (email: string, password: string) => Promise<void>
   signUp: (input: CustomerSignUpInput, password: string) => Promise<void>
   completeProfile: (input: CustomerProfileInput) => Promise<void>
