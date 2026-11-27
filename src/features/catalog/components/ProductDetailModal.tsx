@@ -122,9 +122,7 @@ const ProductDetailModalContent = ({ product, onClose }: { product: Product; onC
 
   const stockText =
     stockLevel === 'out'
-      ? selectedVariant
-        ? 'Esgotado nesta cor'
-        : 'Esgotado'
+      ? 'Produto indisponível'
       : stockLevel === 'low'
         ? `Últimas ${stock} ${stock === 1 ? 'unidade' : 'unidades'}`
         : `Restam ${stock} unidades`
@@ -256,15 +254,18 @@ const ProductDetailModalContent = ({ product, onClose }: { product: Product; onC
             </fieldset>
 
             {isProductOutOfStock || isColorOutOfStock || !hasAvailableSizeForColor ? (
-              <a
-                href={WhatsAppService.generateAvailabilityUrl(unavailableForWhatsApp)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border border-baruc-gold/60 bg-baruc-goldLight px-4 text-sm font-semibold text-baruc-green transition-all hover:bg-baruc-gold/30 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
-              >
-                <MessageCircle className="h-5 w-5" aria-hidden="true" />
-                {isProductOutOfStock ? 'Consultar reposição no WhatsApp' : 'Consultar esta cor no WhatsApp'}
-              </a>
+              <div className="flex flex-col gap-2">
+                <p className="text-center text-sm font-bold uppercase tracking-wide text-red-700">Produto indisponível</p>
+                <a
+                  href={WhatsAppService.generateAvailabilityUrl(unavailableForWhatsApp)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border border-baruc-gold/60 bg-baruc-goldLight px-4 text-sm font-semibold text-baruc-green transition-all hover:bg-baruc-gold/30 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
+                >
+                  <MessageCircle className="h-5 w-5" aria-hidden="true" />
+                  Consultar reposição no WhatsApp
+                </a>
+              </div>
             ) : (
               <button
                 type="button"

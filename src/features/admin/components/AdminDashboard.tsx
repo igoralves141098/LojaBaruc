@@ -1,192 +1,143 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
+  CheckCircle2,
   DownloadCloud,
   Loader2,
   LogOut,
   MessageCircle,
   Package,
-  Pencil,
-  Plus,
   Search,
   ShieldCheck,
+  ShoppingBag,
   Trash2,
   Users,
   X,
 } from 'lucide-react'
 import { AdminLoginModal } from '@/features/admin/components/AdminLoginModal'
-import { AdminProductEditor } from '@/features/admin/components/AdminProductEditor'
 import { useAdminAuth } from '@/features/admin/hooks/useAdminAuth'
-import {
-  importProducts,
-  isAdminCloudReady,
-  removeProduct,
-  saveProduct,
-  subscribeProducts,
-} from '@/features/admin/services/admin.service'
+import { importProducts, isAdminCloudReady, subscribeProducts } from '@/features/admin/services/admin.service'
 import { fetchLocalCatalog } from '@/features/catalog/services/product.service'
-import { getStock, getStockLevel } from '@/features/catalog/stock'
+import { getStock } from '@/features/catalog/stock'
 import type { Product } from '@/features/catalog/types/product.types'
 import { subscribeCustomers } from '@/features/customers/services/customer.service'
 import type { Customer } from '@/features/customers/types/customer.types'
-import {
-  formatDateBR,
-  formatDateTimeBR,
-  onlyDigits,
-  toWhatsAppLink,
-} from '@/features/customers/utils/customer.utils'
+import { formatDateBR, formatDateTimeBR, onlyDigits, toWhatsAppLink } from '@/features/customers/utils/customer.utils'
+import { confirmOrderPayment, deleteOrder, subscribeAllOrders } from '@/features/orders/order.service'
+import type { Order } from '@/features/orders/order.types'
 import { formatCurrency } from '@/utils/formatters'
 
 interface AdminDashboardProps {
   onClose: () => void
 }
 
-type AdminTab = 'products' | 'customers'
+type AdminTab = 'products' | 'customers' | 'orders'
+type OrderFilter = 'all' | 'pending' | 'paid'
 
 const normalizeSearch = (value: string): string =>
-  value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
+  value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
 
 export const AdminDashboard = ({ onClose }: AdminDashboardProps) => {
   const { user, isLoading: isAuthLoading, isConfigured, signIn, signOut } = useAdminAuth()
   const [activeTab, setActiveTab] = useState<AdminTab>('products')
   const [products, setProducts] = useState<Product[]>([])
-  const [search, setSearch] = useState<string>('')
-  const [loadError, setLoadError] = useState<string>('')
-  const [isLoadingProducts, setIsLoadingProducts] = useState<boolean>(true)
-  const [editorProduct, setEditorProduct] = useState<Product | null>(null)
-  const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false)
-  const [isSaving, setIsSaving] = useState<boolean>(false)
-  const [saveError, setSaveError] = useState<string>('')
-  const [actionError, setActionError] = useState<string>('')
-  const [isImporting, setIsImporting] = useState<boolean>(false)
-  const [importMessage, setImportMessage] = useState<string>('')
+  const [search, setSearch] = useState('')
+  const [loadError, setLoadError] = useState('')
+  const [actionError, setActionError] = useState('')
+  const [isImporting, setIsImporting] = useState(false)
+  const [importMessage, setImportMessage] = useState('')
   const [customers, setCustomers] = useState<Customer[]>([])
-  const [customerSearch, setCustomerSearch] = useState<string>('')
-  const [customersError, setCustomersError] = useState<string>('')
-  const [isLoadingCustomers, setIsLoadingCustomers] = useState<boolean>(true)
+  const [customerSearch, setCustomerSearch] = useState('')
+  const [customersError, setCustomersError] = useState('')
+  const [isLoadingCustomers, setIsLoadingCustomers] = useState(true)
+  const [orders, setOrders] = useState<Order[]>([])
+  const [ordersError, setOrdersError] = useState('')
+  const [isLoadingOrders, setIsLoadingOrders] = useState(true)
+  const [orderFilter, setOrderFilter] = useState<OrderFilter>('all')
+  const [orderSearch, setOrderSearch] = useState('')
+  const [confirmingId, setConfirmingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const cloudReady = isAdminCloudReady()
 
   useEffect(() => {
     if (!user || !cloudReady) return
-
-    const unsubscribe = subscribeProducts(
-      (nextProducts) => {
-        setProducts(nextProducts)
-        setLoadError('')
-        setIsLoadingProducts(false)
-      },
-      (message) => {
-        setLoadError(message)
-        setIsLoadingProducts(false)
-      },
+    return subscribeProducts(
+      (next) => { setProducts(next); setLoadError('') },
+      (msg) => setLoadError(msg),
     )
-
-    return unsubscribe
   }, [user, cloudReady])
 
   useEffect(() => {
     if (!user || !cloudReady) return
-
-    const unsubscribe = subscribeCustomers(
-      (nextCustomers) => {
-        setCustomers(nextCustomers)
-        setCustomersError('')
-        setIsLoadingCustomers(false)
-      },
-      (message) => {
-        setCustomersError(message)
-        setIsLoadingCustomers(false)
-      },
+    return subscribeCustomers(
+      (next) => { setCustomers(next); setCustomersError(''); setIsLoadingCustomers(false) },
+      (msg) => { setCustomersError(msg); setIsLoadingCustomers(false) },
     )
-
-    return unsubscribe
   }, [user, cloudReady])
 
-  const filteredProducts = useMemo(() => {
-    const query = normalizeSearch(search)
-    if (query.length === 0) return products
-    return products.filter((product) =>
-      normalizeSearch(
-        `${product.name} ${product.sku} ${product.category} ${product.niche} ${product.colors.join(' ')}`,
-      ).includes(query),
+  useEffect(() => {
+    if (!user || !cloudReady) return
+    return subscribeAllOrders(
+      (next) => { setOrders(next); setOrdersError(''); setIsLoadingOrders(false) },
+      (msg) => { setOrdersError(msg); setIsLoadingOrders(false) },
     )
-  }, [products, search])
+  }, [user, cloudReady])
 
   const filteredCustomers = useMemo(() => {
-    const query = normalizeSearch(customerSearch)
+    const q = normalizeSearch(customerSearch)
     const digits = onlyDigits(customerSearch)
-    if (query.length === 0 && digits.length === 0) return customers
-    return customers.filter((customer) => {
-      const haystack = normalizeSearch(
-        `${customer.fullName} ${customer.email} ${customer.cpf} ${customer.phone}`,
-      )
-      if (query.length > 0 && haystack.includes(query)) return true
-      if (digits.length > 0) {
-        return onlyDigits(`${customer.cpf}${customer.phone}`).includes(digits)
-      }
+    if (!q && !digits) return customers
+    return customers.filter((c) => {
+      const hay = normalizeSearch(`${c.fullName} ${c.email} ${c.cpf} ${c.phone}`)
+      if (q && hay.includes(q)) return true
+      if (digits) return onlyDigits(`${c.cpf}${c.phone}`).includes(digits)
       return false
     })
   }, [customers, customerSearch])
 
-  const totalStock = useMemo(
-    () => products.reduce((total, product) => total + getStock(product), 0),
-    [products],
-  )
+  const totalStock = useMemo(() => products.reduce((t, p) => t + getStock(p), 0), [products])
 
-  const handleSave = useCallback(async (product: Product) => {
-    setIsSaving(true)
-    setSaveError('')
-    try {
-      await saveProduct(product)
-      setIsEditorOpen(false)
-      setEditorProduct(null)
-    } catch (error) {
-      setSaveError(error instanceof Error ? error.message : 'Não foi possível salvar o produto.')
-    } finally {
-      setIsSaving(false)
-    }
-  }, [])
+  const paidOrders = useMemo(() => orders.filter((o) => o.status === 'paid'), [orders])
+  const pendingOrders = useMemo(() => orders.filter((o) => o.status === 'pending'), [orders])
+  const paidTotal = useMemo(() => paidOrders.reduce((sum, o) => sum + o.totalAmount, 0), [paidOrders])
+  const pendingTotal = useMemo(() => pendingOrders.reduce((sum, o) => sum + o.totalAmount, 0), [pendingOrders])
 
-  const handleDelete = useCallback(async (product: Product) => {
-    setActionError('')
-    const confirmed = window.confirm(`Excluir "${product.name}"? Esta ação não pode ser desfeita.`)
-    if (!confirmed) return
-    try {
-      await removeProduct(product.id)
-    } catch (error) {
-      setActionError(error instanceof Error ? error.message : 'Não foi possível excluir o produto.')
-    }
-  }, [])
+  const filteredOrders = useMemo(() => {
+    const q = normalizeSearch(orderSearch)
+    return orders.filter((o) => {
+      if (orderFilter !== 'all' && o.status !== orderFilter) return false
+      if (!q) return true
+      const hay = normalizeSearch(
+        `${o.orderCode} ${o.customerName} ${o.customerEmail} ${o.customerCpf} ${o.customerPhone} ${o.items.map((i) => `${i.name} ${i.sku} ${i.colorName} ${i.size}`).join(' ')}`,
+      )
+      return hay.includes(q)
+    })
+  }, [orders, orderFilter, orderSearch])
 
   const handleImport = useCallback(async () => {
-    setIsImporting(true)
-    setActionError('')
-    setImportMessage('')
+    setIsImporting(true); setActionError(''); setImportMessage('')
     try {
-      const localProducts = await fetchLocalCatalog()
-      const imported = await importProducts(localProducts)
+      const local = await fetchLocalCatalog()
+      const imported = await importProducts(local)
       setImportMessage(`${imported} produtos importados do JSON local para o Firestore.`)
-    } catch (error) {
-      setActionError(error instanceof Error ? error.message : 'Falha ao importar o JSON local.')
-    } finally {
-      setIsImporting(false)
-    }
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : 'Falha ao importar o JSON local.')
+    } finally { setIsImporting(false) }
   }, [])
 
-  const openNewProduct = () => {
-    setEditorProduct(null)
-    setSaveError('')
-    setIsEditorOpen(true)
+  const handleConfirmPayment = async (orderId: string) => {
+    setConfirmingId(orderId); setOrdersError('')
+    try { await confirmOrderPayment(orderId) }
+    catch (e) { setOrdersError(e instanceof Error ? e.message : 'Falha ao confirmar pagamento.') }
+    finally { setConfirmingId(null) }
   }
 
-  const openEditProduct = (product: Product) => {
-    setEditorProduct(product)
-    setSaveError('')
-    setIsEditorOpen(true)
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!window.confirm('Excluir este pedido? Esta ação não pode ser desfeita.')) return
+    setDeletingId(orderId); setOrdersError('')
+    try { await deleteOrder(orderId) }
+    catch (e) { setOrdersError(e instanceof Error ? e.message : 'Falha ao excluir pedido.') }
+    finally { setDeletingId(null) }
   }
 
   const handleGoToStore = () => {
@@ -209,21 +160,11 @@ export const AdminDashboard = ({ onClose }: AdminDashboardProps) => {
           </div>
           <div className="flex items-center gap-2">
             {user && (
-              <button
-                type="button"
-                onClick={() => void signOut()}
-                className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-baruc-gold/40 px-3 text-xs font-semibold transition-colors hover:bg-baruc-greenLight focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
-              >
-                <LogOut className="h-4 w-4" aria-hidden="true" />
-                Sair
+              <button type="button" onClick={() => void signOut()} className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-baruc-gold/40 px-3 text-xs font-semibold transition-colors hover:bg-baruc-greenLight focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold">
+                <LogOut className="h-4 w-4" aria-hidden="true" /> Sair
               </button>
             )}
-            <button
-              type="button"
-              onClick={handleGoToStore}
-              aria-label="Fechar painel e voltar à loja"
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-baruc-gold/40 transition-colors hover:bg-baruc-greenLight focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
-            >
+            <button type="button" onClick={handleGoToStore} aria-label="Fechar painel e voltar à loja" className="flex h-10 w-10 items-center justify-center rounded-lg border border-baruc-gold/40 transition-colors hover:bg-baruc-greenLight focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold">
               <X className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
@@ -231,355 +172,250 @@ export const AdminDashboard = ({ onClose }: AdminDashboardProps) => {
       </header>
 
       {isAuthLoading ? (
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-baruc-goldDark" aria-hidden="true" />
-        </div>
+        <div className="flex min-h-[60vh] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-baruc-goldDark" aria-hidden="true" /></div>
       ) : !isConfigured ? (
         <div className="mx-auto max-w-lg px-4 py-16 text-center">
           <h2 className="font-serif text-2xl font-semibold text-baruc-green">Firebase não configurado</h2>
-          <p className="mt-2 text-sm text-neutral-600">
-            Cadastre as variáveis VITE_FIREBASE_* no arquivo .env (e na Vercel) para habilitar o painel.
-          </p>
+          <p className="mt-2 text-sm text-neutral-600">Cadastre as variáveis VITE_FIREBASE_* no ambiente para habilitar o painel.</p>
         </div>
       ) : !user ? (
         <AdminLoginModal onClose={handleGoToStore} signIn={signIn} isConfigured={isConfigured} />
       ) : (
         <main className="mx-auto flex max-w-6xl flex-col gap-5 px-4 py-6 sm:px-6">
-          <nav
-            className="flex gap-1 rounded-2xl border border-neutral-200 bg-white p-1.5"
-            aria-label="Seções do painel"
-          >
-            <button
-              type="button"
-              onClick={() => setActiveTab('products')}
-              aria-pressed={activeTab === 'products'}
-              className={`inline-flex min-h-[42px] flex-1 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold ${
-                activeTab === 'products'
-                  ? 'bg-baruc-green text-baruc-gold'
-                  : 'text-neutral-600 hover:bg-baruc-cream'
-              }`}
-            >
-              <Package className="h-4 w-4" aria-hidden="true" />
-              Produtos
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('customers')}
-              aria-pressed={activeTab === 'customers'}
-              className={`inline-flex min-h-[42px] flex-1 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold ${
-                activeTab === 'customers'
-                  ? 'bg-baruc-green text-baruc-gold'
-                  : 'text-neutral-600 hover:bg-baruc-cream'
-              }`}
-            >
-              <Users className="h-4 w-4" aria-hidden="true" />
-              Clientes
-            </button>
+          <nav className="flex gap-1 rounded-2xl border border-neutral-200 bg-white p-1.5" aria-label="Seções do painel">
+            {([
+              { id: 'products', label: 'Produtos', icon: Package },
+              { id: 'customers', label: 'Clientes', icon: Users },
+              { id: 'orders', label: 'Vendas', icon: ShoppingBag },
+            ] as const).map(({ id, label, icon: Icon }) => (
+              <button key={id} type="button" onClick={() => setActiveTab(id)} aria-pressed={activeTab === id}
+                className={`inline-flex min-h-[42px] flex-1 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold ${activeTab === id ? 'bg-baruc-green text-baruc-gold' : 'text-neutral-600 hover:bg-baruc-cream'}`}>
+                <Icon className="h-4 w-4" aria-hidden="true" /> {label}
+              </button>
+            ))}
           </nav>
 
-          {activeTab === 'products' ? (
+          {activeTab === 'products' && (
             <>
               <section className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-neutral-200 bg-white p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Produtos</p>
-                  <p className="mt-1 text-3xl font-bold text-baruc-green">{products.length}</p>
+                <SummaryCard label="Produtos" value={String(products.length)} />
+                <SummaryCard label="Peças em estoque" value={String(totalStock)} />
+                <SummaryCard label="Esgotados" value={String(products.filter((p) => getStock(p) <= 0).length)} />
+              </section>
+              <section className="flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="relative w-full sm:max-w-md">
+                    <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" aria-hidden="true" />
+                    <input type="search" placeholder="Buscar por nome, SKU, categoria..." value={search} onChange={(e) => setSearch(e.target.value)}
+                      className="h-11 w-full rounded-xl border border-neutral-200 bg-baruc-cream pl-10 pr-3.5 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-baruc-gold focus:outline-none focus:ring-2 focus:ring-baruc-gold/25" />
+                  </div>
+                  <button type="button" onClick={() => void handleImport()} disabled={isImporting}
+                    className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl border border-neutral-300 bg-white px-4 text-sm font-semibold text-baruc-green transition-colors hover:border-baruc-gold disabled:cursor-not-allowed disabled:opacity-60">
+                    {isImporting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <DownloadCloud className="h-4 w-4" aria-hidden="true" />}
+                    Importar JSON local
+                  </button>
                 </div>
-                <div className="rounded-2xl border border-neutral-200 bg-white p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Peças em estoque</p>
-                  <p className="mt-1 text-3xl font-bold text-baruc-green">{totalStock}</p>
+              </section>
+              {(loadError || actionError) && <AlertError message={loadError || actionError} />}
+              {importMessage && <AlertSuccess message={importMessage} />}
+            </>
+          )}
+
+          {activeTab === 'customers' && (
+            <>
+              <section className="grid gap-3 sm:grid-cols-2">
+                <SummaryCard label="Clientes cadastrados" value={String(customers.length)} />
+                <SummaryCard label="Com telefone" value={String(customers.filter((c) => onlyDigits(c.phone).length > 0).length)} />
+              </section>
+              <section className="flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-4">
+                <div className="relative w-full sm:max-w-md">
+                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" aria-hidden="true" />
+                  <input type="search" placeholder="Buscar por nome, CPF, e-mail ou telefone..." value={customerSearch} onChange={(e) => setCustomerSearch(e.target.value)}
+                    className="h-11 w-full rounded-xl border border-neutral-200 bg-baruc-cream pl-10 pr-3.5 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-baruc-gold focus:outline-none focus:ring-2 focus:ring-baruc-gold/25" />
                 </div>
-                <div className="rounded-2xl border border-neutral-200 bg-white p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Esgotados</p>
-                  <p className="mt-1 text-3xl font-bold text-baruc-green">
-                    {products.filter((product) => getStock(product) <= 0).length}
-                  </p>
+                {customersError && <AlertError message={customersError} />}
+              </section>
+              {isLoadingCustomers ? <CenteredLoader /> : filteredCustomers.length === 0 ? (
+                <EmptyState icon={Users} title="Nenhum cliente encontrado" text="Ajuste a busca ou aguarde novos cadastros." />
+              ) : (
+                <div className="overflow-x-auto rounded-2xl border border-neutral-200 bg-white">
+                  <table className="w-full min-w-[720px] text-left text-sm">
+                    <thead className="border-b border-neutral-200 bg-baruc-cream/70 text-xs uppercase tracking-wide text-neutral-500">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold">Nome</th><th className="px-4 py-3 font-semibold">E-mail</th>
+                        <th className="px-4 py-3 font-semibold">CPF</th><th className="px-4 py-3 font-semibold">Nascimento</th>
+                        <th className="px-4 py-3 font-semibold">Telefone</th><th className="px-4 py-3 font-semibold">Cadastro</th>
+                        <th className="px-4 py-3 text-right font-semibold">WhatsApp</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredCustomers.map((c) => (
+                        <tr key={c.uid} className="border-b border-neutral-100 last:border-0">
+                          <td className="px-4 py-3 font-semibold text-baruc-green">{c.fullName}</td>
+                          <td className="px-4 py-3 text-neutral-600">{c.email}</td>
+                          <td className="px-4 py-3 font-mono text-xs text-neutral-600">{c.cpf}</td>
+                          <td className="px-4 py-3 text-neutral-600">{formatDateBR(c.birthDate)}</td>
+                          <td className="px-4 py-3 text-neutral-600">{c.phone}</td>
+                          <td className="px-4 py-3 text-neutral-600">{formatDateTimeBR(c.createdAt)}</td>
+                          <td className="px-4 py-3 text-right"><CustomerWhatsAppButton customer={c} /></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
+              )}
+            </>
+          )}
+
+          {activeTab === 'orders' && (
+            <>
+              <section className="grid gap-3 sm:grid-cols-3">
+                <SummaryCard label="Vendas Pagas" value={String(paidOrders.length)} sub={formatCurrency(paidTotal)} />
+                <SummaryCard label="Faturamento Total" value={formatCurrency(paidTotal)} />
+                <SummaryCard label="Aguardando Pagamento" value={String(pendingOrders.length)} sub={formatCurrency(pendingTotal)} />
               </section>
 
               <section className="flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-4">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="relative w-full sm:max-w-md">
-                    <Search
-                      className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
-                      aria-hidden="true"
-                    />
-                    <input
-                      type="search"
-                      inputMode="search"
-                      placeholder="Buscar por nome, SKU, categoria..."
-                      value={search}
-                      onChange={(event) => setSearch(event.target.value)}
-                      className="h-11 w-full rounded-xl border border-neutral-200 bg-baruc-cream pl-10 pr-3.5 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-baruc-gold focus:outline-none focus:ring-2 focus:ring-baruc-gold/25"
-                    />
+                    <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" aria-hidden="true" />
+                    <input type="search" placeholder="Buscar por cliente, código ou produto..." value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)}
+                      className="h-11 w-full rounded-xl border border-neutral-200 bg-baruc-cream pl-10 pr-3.5 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-baruc-gold focus:outline-none focus:ring-2 focus:ring-baruc-gold/25" />
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={openNewProduct}
-                      className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl border border-baruc-gold bg-baruc-green px-4 text-sm font-bold text-baruc-gold transition-colors hover:bg-baruc-greenDark active:scale-[0.98]"
-                    >
-                      <Plus className="h-4 w-4" aria-hidden="true" />
-                      Novo produto
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void handleImport()}
-                      disabled={isImporting}
-                      className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl border border-neutral-300 bg-white px-4 text-sm font-semibold text-baruc-green transition-colors hover:border-baruc-gold disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98]"
-                    >
-                      {isImporting ? (
-                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                      ) : (
-                        <DownloadCloud className="h-4 w-4" aria-hidden="true" />
-                      )}
-                      Importar JSON local
-                    </button>
-                  </div>
-                </div>
-
-                {(loadError || actionError) && (
-                  <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-700">
-                    {loadError || actionError}
-                  </p>
-                )}
-                {importMessage && (
-                  <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-sm font-medium text-emerald-700">
-                    {importMessage}
-                  </p>
-                )}
-              </section>
-
-              {isLoadingProducts ? (
-                <div className="flex justify-center py-16">
-                  <Loader2 className="h-8 w-8 animate-spin text-baruc-goldDark" aria-hidden="true" />
-                </div>
-              ) : filteredProducts.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-baruc-gold/40 bg-white px-6 py-16 text-center">
-                  <Package className="h-8 w-8 text-baruc-goldDark" aria-hidden="true" />
-                  <h2 className="font-serif text-xl font-semibold text-baruc-green">
-                    {products.length === 0 ? 'Nenhum produto no Firestore' : 'Nenhum produto encontrado'}
-                  </h2>
-                  <p className="max-w-sm text-sm text-neutral-500">
-                    {products.length === 0
-                      ? 'Use "Importar JSON local" para popular o banco com as peças atuais ou crie um novo produto.'
-                      : 'Ajuste a busca para localizar o produto.'}
-                  </p>
-                </div>
-              ) : (
-                <ul className="flex flex-col gap-2.5">
-                  {filteredProducts.map((product) => {
-                    const stock = getStock(product)
-                    const level = getStockLevel(stock)
-                    const stockClass =
-                      level === 'out'
-                        ? 'border-red-200 bg-red-50 text-red-700'
-                        : level === 'low'
-                          ? 'border-amber-300 bg-amber-50 text-amber-700'
-                          : 'border-emerald-200 bg-emerald-50 text-emerald-700'
-
-                    return (
-                      <li
-                        key={product.id}
-                        className="flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-3 sm:flex-row sm:items-center"
-                      >
-                        <img
-                          src={product.imageUrl}
-                          alt={product.name}
-                          loading="lazy"
-                          width={64}
-                          height={64}
-                          className="h-16 w-16 shrink-0 rounded-xl object-cover"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <h3 className="truncate font-serif text-lg font-semibold text-baruc-green">{product.name}</h3>
-                          <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-neutral-500">
-                            <span className="font-mono">{product.sku}</span>
-                            <span aria-hidden="true">•</span>
-                            <span>{product.category}</span>
-                            <span aria-hidden="true">•</span>
-                            <span className="font-semibold text-neutral-700">{formatCurrency(product.price ?? 0)}</span>
-                            {product.variants && product.variants.length > 0 && (
-                              <>
-                                <span aria-hidden="true">•</span>
-                                <span>{product.variants.length} cor(es)</span>
-                              </>
-                            )}
-                          </p>
-                        </div>
-                        <div className="flex items-center justify-between gap-2 sm:justify-end">
-                          <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${stockClass}`}>
-                            {level === 'out' ? 'Esgotado' : `${stock} em estoque`}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => openEditProduct(product)}
-                            aria-label={`Editar ${product.name}`}
-                            className="flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-200 text-baruc-green transition-colors hover:border-baruc-gold hover:bg-baruc-goldLight active:scale-95"
-                          >
-                            <Pencil className="h-4 w-4" aria-hidden="true" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void handleDelete(product)}
-                            aria-label={`Excluir ${product.name}`}
-                            className="flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-200 text-red-600 transition-colors hover:border-red-300 hover:bg-red-50 active:scale-95"
-                          >
-                            <Trash2 className="h-4 w-4" aria-hidden="true" />
-                          </button>
-                        </div>
-                      </li>
-                    )
-                  })}
-                </ul>
-              )}
-            </>
-          ) : (
-            <>
-              <section className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-neutral-200 bg-white p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Clientes cadastrados</p>
-                  <p className="mt-1 text-3xl font-bold text-baruc-green">{customers.length}</p>
-                </div>
-                <div className="rounded-2xl border border-neutral-200 bg-white p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Com telefone</p>
-                  <p className="mt-1 text-3xl font-bold text-baruc-green">
-                    {customers.filter((customer) => onlyDigits(customer.phone).length > 0).length}
-                  </p>
-                </div>
-              </section>
-
-              <section className="flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-4">
-                <div className="relative w-full sm:max-w-md">
-                  <Search
-                    className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
-                    aria-hidden="true"
-                  />
-                  <input
-                    type="search"
-                    inputMode="search"
-                    placeholder="Buscar por nome, CPF, e-mail ou telefone..."
-                    value={customerSearch}
-                    onChange={(event) => setCustomerSearch(event.target.value)}
-                    className="h-11 w-full rounded-xl border border-neutral-200 bg-baruc-cream pl-10 pr-3.5 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-baruc-gold focus:outline-none focus:ring-2 focus:ring-baruc-gold/25"
-                  />
-                </div>
-                {customersError && (
-                  <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-700">
-                    {customersError}
-                  </p>
-                )}
-              </section>
-
-              {isLoadingCustomers ? (
-                <div className="flex justify-center py-16">
-                  <Loader2 className="h-8 w-8 animate-spin text-baruc-goldDark" aria-hidden="true" />
-                </div>
-              ) : filteredCustomers.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-baruc-gold/40 bg-white px-6 py-16 text-center">
-                  <Users className="h-8 w-8 text-baruc-goldDark" aria-hidden="true" />
-                  <h2 className="font-serif text-xl font-semibold text-baruc-green">
-                    {customers.length === 0 ? 'Nenhum cliente cadastrado' : 'Nenhum cliente encontrado'}
-                  </h2>
-                  <p className="max-w-sm text-sm text-neutral-500">
-                    {customers.length === 0
-                      ? 'Os clientes que se cadastrarem na loja aparecerão aqui.'
-                      : 'Ajuste a busca para localizar o cliente.'}
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <ul className="flex flex-col gap-2.5 md:hidden">
-                    {filteredCustomers.map((customer) => (
-                      <li key={customer.uid} className="flex flex-col gap-2 rounded-2xl border border-neutral-200 bg-white p-3.5">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <h3 className="truncate font-serif text-lg font-semibold text-baruc-green">{customer.fullName}</h3>
-                            <p className="truncate text-xs text-neutral-500">{customer.email}</p>
-                          </div>
-                          <CustomerWhatsAppButton customer={customer} />
-                        </div>
-                        <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
-                          <CustomerField label="CPF" value={customer.cpf} />
-                          <CustomerField label="Nascimento" value={formatDateBR(customer.birthDate)} />
-                          <CustomerField label="Telefone" value={customer.phone} />
-                          <CustomerField label="Cadastro" value={formatDateTimeBR(customer.createdAt)} />
-                        </dl>
-                      </li>
+                    {([
+                      { id: 'all', label: 'Todos' },
+                      { id: 'pending', label: 'Aguardando Pagamento' },
+                      { id: 'paid', label: 'Pagos' },
+                    ] as const).map((f) => (
+                      <button key={f.id} type="button" onClick={() => setOrderFilter(f.id)}
+                        className={`min-h-[38px] rounded-lg border px-3 text-xs font-semibold transition-colors ${orderFilter === f.id ? 'border-baruc-gold bg-baruc-green text-baruc-gold' : 'border-neutral-200 text-neutral-600 hover:border-baruc-gold'}`}>
+                        {f.label}
+                      </button>
                     ))}
-                  </ul>
-
-                  <div className="hidden overflow-x-auto rounded-2xl border border-neutral-200 bg-white md:block">
-                    <table className="w-full min-w-[720px] text-left text-sm">
-                      <thead className="border-b border-neutral-200 bg-baruc-cream/70 text-xs uppercase tracking-wide text-neutral-500">
-                        <tr>
-                          <th scope="col" className="px-4 py-3 font-semibold">Nome Completo</th>
-                          <th scope="col" className="px-4 py-3 font-semibold">E-mail</th>
-                          <th scope="col" className="px-4 py-3 font-semibold">CPF</th>
-                          <th scope="col" className="px-4 py-3 font-semibold">Nascimento</th>
-                          <th scope="col" className="px-4 py-3 font-semibold">Telefone</th>
-                          <th scope="col" className="px-4 py-3 font-semibold">Cadastro</th>
-                          <th scope="col" className="px-4 py-3 text-right font-semibold">WhatsApp</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredCustomers.map((customer) => (
-                          <tr key={customer.uid} className="border-b border-neutral-100 last:border-0">
-                            <td className="px-4 py-3 font-semibold text-baruc-green">{customer.fullName}</td>
-                            <td className="px-4 py-3 text-neutral-600">{customer.email}</td>
-                            <td className="px-4 py-3 font-mono text-xs text-neutral-600">{customer.cpf}</td>
-                            <td className="px-4 py-3 text-neutral-600">{formatDateBR(customer.birthDate)}</td>
-                            <td className="px-4 py-3 text-neutral-600">{customer.phone}</td>
-                            <td className="px-4 py-3 text-neutral-600">{formatDateTimeBR(customer.createdAt)}</td>
-                            <td className="px-4 py-3 text-right">
-                              <CustomerWhatsAppButton customer={customer} />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
                   </div>
-                </>
+                </div>
+                {ordersError && <AlertError message={ordersError} />}
+              </section>
+
+              {isLoadingOrders ? <CenteredLoader /> : filteredOrders.length === 0 ? (
+                <EmptyState icon={ShoppingBag} title="Nenhuma venda encontrada" text="Ajuste os filtros ou aguarde novos pedidos." />
+              ) : (
+                <ul className="flex flex-col gap-3">
+                  {filteredOrders.map((order) => (
+                    <li key={order.id} className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-mono text-sm font-bold text-baruc-green">{order.orderCode}</span>
+                            <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${order.status === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                              {order.status === 'paid' ? 'Pago' : 'Aguardando Pagamento'}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-xs text-neutral-500">{order.createdAt ? formatDateTimeBR(order.createdAt) : '—'}</p>
+                        </div>
+                        <p className="text-lg font-bold text-baruc-green">{formatCurrency(order.totalAmount)}</p>
+                      </div>
+
+                      <div className="mt-3 grid gap-2 text-sm text-neutral-700 sm:grid-cols-2">
+                        <p><span className="font-semibold text-neutral-500">Cliente:</span> {order.customerName || '—'}</p>
+                        <p><span className="font-semibold text-neutral-500">E-mail:</span> {order.customerEmail || '—'}</p>
+                        <p><span className="font-semibold text-neutral-500">CPF:</span> {order.customerCpf || '—'}</p>
+                        <p className="flex items-center gap-2">
+                          <span><span className="font-semibold text-neutral-500">Tel:</span> {order.customerPhone || '—'}</span>
+                          {toWhatsAppLink(order.customerPhone) && (
+                            <a href={toWhatsAppLink(order.customerPhone)!} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 hover:bg-emerald-100">
+                              <MessageCircle className="h-3 w-3" aria-hidden="true" /> WhatsApp
+                            </a>
+                          )}
+                        </p>
+                        <p><span className="font-semibold text-neutral-500">Pagamento:</span> {order.paymentMethod}</p>
+                        <p><span className="font-semibold text-neutral-500">Entrega:</span> {order.deliveryMethod}</p>
+                      </div>
+
+                      <div className="mt-3 overflow-x-auto rounded-xl border border-neutral-200">
+                        <table className="w-full text-xs">
+                          <thead className="bg-baruc-cream text-neutral-600">
+                            <tr>
+                              <th className="px-3 py-2 text-left font-semibold">Produto</th>
+                              <th className="px-3 py-2 text-left font-semibold">Cor</th>
+                              <th className="px-3 py-2 text-left font-semibold">Tam.</th>
+                              <th className="px-3 py-2 text-right font-semibold">Qtd</th>
+                              <th className="px-3 py-2 text-right font-semibold">Valor</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {order.items.map((item, idx) => (
+                              <tr key={`${order.id}-${idx}`} className="border-t border-neutral-100">
+                                <td className="px-3 py-2 text-neutral-800">{item.name} <span className="font-mono text-[10px] text-neutral-400">{item.sku}</span></td>
+                                <td className="px-3 py-2 text-neutral-600">{item.colorName || '—'}</td>
+                                <td className="px-3 py-2 text-neutral-600">{item.size || '—'}</td>
+                                <td className="px-3 py-2 text-right text-neutral-600">{item.quantity}</td>
+                                <td className="px-3 py-2 text-right font-medium text-neutral-800">{formatCurrency(item.subtotal)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {order.status === 'pending' && (
+                          <button type="button" onClick={() => void handleConfirmPayment(order.id)} disabled={confirmingId === order.id}
+                            className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60">
+                            {confirmingId === order.id ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <CheckCircle2 className="h-4 w-4" aria-hidden="true" />}
+                            Confirmar Pagamento
+                          </button>
+                        )}
+                        <button type="button" onClick={() => void handleDeleteOrder(order.id)} disabled={deletingId === order.id}
+                          className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 text-sm font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60">
+                          {deletingId === order.id ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Trash2 className="h-4 w-4" aria-hidden="true" />}
+                          Excluir
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               )}
             </>
           )}
         </main>
       )}
-
-      {isEditorOpen && (
-        <AdminProductEditor
-          product={editorProduct}
-          isSaving={isSaving}
-          error={saveError}
-          onSave={(product) => void handleSave(product)}
-          onCancel={() => setIsEditorOpen(false)}
-        />
-      )}
     </div>
   )
 }
 
-const CustomerField = ({ label, value }: { label: string; value: string }) => (
-  <div className="min-w-0">
-    <dt className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">{label}</dt>
-    <dd className="truncate font-medium text-neutral-700">{value || '—'}</dd>
+const SummaryCard = ({ label, value, sub }: { label: string; value: string; sub?: string }) => (
+  <div className="rounded-2xl border border-neutral-200 bg-white p-4">
+    <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{label}</p>
+    <p className="mt-1 text-2xl font-bold text-baruc-green sm:text-3xl">{value}</p>
+    {sub && <p className="mt-0.5 text-xs font-medium text-neutral-500">{sub}</p>}
+  </div>
+)
+
+const AlertError = ({ message }: { message: string }) => (
+  <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-700">{message}</p>
+)
+const AlertSuccess = ({ message }: { message: string }) => (
+  <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-sm font-medium text-emerald-700">{message}</p>
+)
+const CenteredLoader = () => (
+  <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-baruc-goldDark" aria-hidden="true" /></div>
+)
+const EmptyState = ({ icon: Icon, title, text }: { icon: typeof Users; title: string; text: string }) => (
+  <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-baruc-gold/40 bg-white px-6 py-16 text-center">
+    <Icon className="h-8 w-8 text-baruc-goldDark" aria-hidden="true" />
+    <h2 className="font-serif text-xl font-semibold text-baruc-green">{title}</h2>
+    <p className="max-w-sm text-sm text-neutral-500">{text}</p>
   </div>
 )
 
 const CustomerWhatsAppButton = ({ customer }: { customer: Customer }) => {
   const link = toWhatsAppLink(customer.phone)
-  if (!link) {
-    return <span className="text-xs text-neutral-400">Sem telefone</span>
-  }
+  if (!link) return <span className="text-xs text-neutral-400">Sem telefone</span>
   return (
-    <a
-      href={link}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={`Abrir WhatsApp de ${customer.fullName}`}
-      className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 text-xs font-semibold text-emerald-700 transition-colors hover:border-emerald-400 hover:bg-emerald-100 active:scale-95"
-    >
-      <MessageCircle className="h-4 w-4" aria-hidden="true" />
-      WhatsApp
+    <a href={link} target="_blank" rel="noopener noreferrer" aria-label={`Abrir WhatsApp de ${customer.fullName}`}
+      className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 text-xs font-semibold text-emerald-700 transition-colors hover:border-emerald-400 hover:bg-emerald-100 active:scale-95">
+      <MessageCircle className="h-4 w-4" aria-hidden="true" /> WhatsApp
     </a>
   )
 }

@@ -12,7 +12,7 @@ const isSameLine = (item: CartItem, productId: string, size: string, color?: str
 
 const getProductTotal = (items: CartItem[], productId: string): number =>
   items
-    .filter((item) => item.product.id === productId)
+    .filter((item) => item.product?.id === productId)
     .reduce((total, item) => total + item.quantity, 0)
 
 const clampQuantity = (quantity: number): number =>
@@ -30,10 +30,7 @@ const isValidCartItem = (value: unknown): value is CartItem => {
     typeof product === 'object' &&
     product !== null &&
     typeof product.id === 'string' &&
-    typeof product.name === 'string' &&
-    typeof product.sku === 'string' &&
-    (product.price === null || typeof product.price === 'number') &&
-    typeof product.imageUrl === 'string'
+    typeof product.name === 'string'
   )
 }
 
@@ -82,26 +79,30 @@ export const CartProvider = ({ children }: CartProviderProps) => {
   const closeCart = useCallback(() => setIsOpen(false), [])
 
   const addItem = useCallback((product: Product, size: string, quantity: number = 1, color?: string) => {
+    if (!product?.id) return
     const stock = getStock(product)
     if (stock <= 0) return
 
     const safeQuantity = clampQuantity(quantity)
+    const safeSize = size || product.sizes?.[0] || 'Único'
+    const safeColor = color || undefined
+
     setItems((current) => {
       const currentTotal = getProductTotal(current, product.id)
       const remaining = stock - currentTotal
       if (remaining <= 0) return current
 
       const quantityToAdd = Math.min(safeQuantity, remaining)
-      const existing = current.find((item) => isSameLine(item, product.id, size, color))
+      const existing = current.find((item) => isSameLine(item, product.id, safeSize, safeColor))
 
       if (existing) {
         return current.map((item) =>
-          isSameLine(item, product.id, size, color)
+          isSameLine(item, product.id, safeSize, safeColor)
             ? { ...item, product, quantity: clampQuantity(item.quantity + quantityToAdd) }
             : item,
         )
       }
-      return [...current, { product, selectedSize: size, selectedColor: color, quantity: quantityToAdd }]
+      return [...current, { product, selectedSize: safeSize, selectedColor: safeColor, quantity: quantityToAdd }]
     })
   }, [])
 
@@ -118,7 +119,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
 
       const stock = getStock(line.product)
       const otherLinesTotal = current
-        .filter((item) => item.product.id === productId && !isSameLine(item, productId, size, color))
+        .filter((item) => item.product?.id === productId && !isSameLine(item, productId, size, color))
         .reduce((total, item) => total + item.quantity, 0)
       const maxForLine = stock - otherLinesTotal
       if (maxForLine <= 0) return current

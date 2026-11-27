@@ -32,6 +32,7 @@ const toDate = (value: unknown): Date | null => {
 }
 
 const toStringValue = (value: unknown): string => (typeof value === 'string' ? value : '')
+const toBooleanValue = (value: unknown): boolean => value === true
 
 export const normalizeCustomer = (uid: string, data: DocumentData): Customer => ({
   uid: typeof data.uid === 'string' && data.uid.length > 0 ? data.uid : uid,
@@ -40,6 +41,12 @@ export const normalizeCustomer = (uid: string, data: DocumentData): Customer => 
   cpf: toStringValue(data.cpf),
   birthDate: toStringValue(data.birthDate),
   phone: toStringValue(data.phone),
+  emailVerified: toBooleanValue(data.emailVerified),
+  status: (() => {
+    const raw = data.status
+    if (raw === 'pending_verification' || raw === 'active' || raw === 'inactive') return raw
+    return data.emailVerified === true ? 'active' : 'pending_verification'
+  })(),
   createdAt: toDate(data.createdAt),
   updatedAt: toDate(data.updatedAt),
 })
@@ -101,7 +108,44 @@ export const saveCustomerProfile = async (uid: string, input: CustomerSignUpInpu
     cpf: input.cpf.trim(),
     birthDate: input.birthDate,
     phone: input.phone.trim(),
+    emailVerified: false,
+    status: 'pending_verification',
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   })
+}
+
+export const updateCustomerProfile = async (
+  uid: string,
+  input: { fullName?: string; cpf?: string; birthDate?: string; phone?: string },
+): Promise<void> => {
+  if (!db) throw new Error('Firebase não configurado.')
+  await setDoc(
+    doc(db, CUSTOMERS_COLLECTION, uid),
+    {
+      fullName: input.fullName?.trim(),
+      cpf: input.cpf?.trim(),
+      birthDate: input.birthDate,
+      phone: input.phone?.trim(),
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true },
+  )
+}
+
+export const updateCustomerVerification = async (
+  uid: string,
+  emailVerified: boolean,
+  status: Customer['status'],
+): Promise<void> => {
+  if (!db) throw new Error('Firebase não configurado.')
+  await setDoc(
+    doc(db, CUSTOMERS_COLLECTION, uid),
+    {
+      emailVerified,
+      status,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true },
+  )
 }

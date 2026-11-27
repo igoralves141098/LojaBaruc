@@ -22,7 +22,10 @@ const ShowcaseCard = ({ product, onOpen }: ShowcaseCardProps) => {
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(variants[0]?.id)
   const selectedVariant = variants.find((variant) => variant.id === selectedVariantId)
   const displayImage = selectedVariant?.imageUrl || product.imageUrl
-  const outOfStock = isOutOfStock(product)
+  const selectedColorStock = selectedVariant
+    ? selectedVariant.sizes.reduce((sum, s) => sum + (typeof s.stock === 'number' ? Math.max(0, s.stock) : 0), 0)
+    : null
+  const outOfStock = isOutOfStock(product) || selectedColorStock === 0
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg">
@@ -45,7 +48,7 @@ const ShowcaseCard = ({ product, onOpen }: ShowcaseCardProps) => {
         />
         {outOfStock && (
           <span className="absolute left-3 top-3 rounded-full border border-baruc-gold/50 bg-baruc-green px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-baruc-gold">
-            Esgotado
+            Produto indisponível
           </span>
         )}
       </button>

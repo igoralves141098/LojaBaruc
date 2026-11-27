@@ -102,10 +102,10 @@ const ProductCardComponent = ({ product, onOpenDetails }: ProductCardProps) => {
           )}
         </div>
 
-        {isUnavailable && (
+        {(isUnavailable || isColorUnavailable) && (
           <div className="absolute inset-0 flex items-center justify-center bg-baruc-green/30">
             <span className="rounded-full border border-baruc-gold/50 bg-baruc-green px-5 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-baruc-gold shadow-lg">
-              Esgotado
+              Produto indisponível
             </span>
           </div>
         )}
@@ -216,15 +216,18 @@ const ProductCardComponent = ({ product, onOpenDetails }: ProductCardProps) => {
         </fieldset>
 
         {isUnavailable || isColorUnavailable || !hasAvailableSizeForColor ? (
-          <a
-            href={WhatsAppService.generateAvailabilityUrl(unavailableForWhatsApp)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-baruc-gold/60 bg-baruc-goldLight px-4 text-sm font-semibold text-baruc-green transition-all hover:bg-baruc-gold/30 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold focus-visible:ring-offset-2"
-          >
-            <MessageCircle className="h-5 w-5" aria-hidden="true" />
-            {isUnavailable ? 'Avise-me na reposição' : 'Consultar esta cor no WhatsApp'}
-          </a>
+          <div className="flex flex-col gap-2">
+            <p className="text-center text-xs font-bold uppercase tracking-wide text-red-700">Produto indisponível</p>
+            <a
+              href={WhatsAppService.generateAvailabilityUrl(unavailableForWhatsApp)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-baruc-gold/60 bg-baruc-goldLight px-4 text-sm font-semibold text-baruc-green transition-all hover:bg-baruc-gold/30 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold focus-visible:ring-offset-2"
+            >
+              <MessageCircle className="h-5 w-5" aria-hidden="true" />
+              Avise-me na reposição
+            </a>
+          </div>
         ) : (
           <button
             type="button"

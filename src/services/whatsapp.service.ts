@@ -16,6 +16,7 @@ export interface CartCheckoutParams {
   customerName?: string
   paymentMethod?: string
   deliveryType?: string
+  orderShortCode?: string
 }
 
 const buildUrl = (message: string): string =>
@@ -44,6 +45,7 @@ const buildCheckoutMessage = ({
   customerName,
   paymentMethod,
   deliveryType,
+  orderShortCode,
 }: CartCheckoutParams): string => {
   const totalPieces = items.reduce((sum, item) => sum + item.quantity, 0)
   const lines: string[] = [
@@ -70,6 +72,11 @@ const buildCheckoutMessage = ({
     lines.push(`*VALOR DOS ITENS COM PREÇO: ${formatCurrency(totalPrice)}*`, 'Itens a confirmar: aguardo o orçamento.')
   } else {
     lines.push(`*VALOR TOTAL DO PEDIDO: ${formatCurrency(totalPrice)}*`)
+  }
+
+  if (orderShortCode) {
+    lines.push('', DIVIDER, '*CÓDIGO DO PEDIDO*')
+    lines.push(`Código: ${orderShortCode}`)
   }
 
   const name = clean(customerName)

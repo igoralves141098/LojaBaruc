@@ -1,9 +1,10 @@
-﻿import { useState } from 'react'
-import { LogOut, Menu, Phone, Search, ShoppingBag, Truck, UserRound, X } from 'lucide-react'
+﻿import { useEffect, useRef, useState } from 'react'
+import { ChevronDown, LogOut, Menu, Phone, Search, ShoppingBag, Truck, UserRound, X } from 'lucide-react'
 import { BarucLogo } from '@/components/ui/BarucLogo'
 import { InstagramIcon } from '@/components/ui/InstagramIcon'
 import { env } from '@/config/env'
 import { useCart } from '@/features/cart/hooks/useCart'
+import { CustomerAccountModal } from '@/features/customers/components/CustomerAccountModal'
 import { CustomerAuthModal } from '@/features/customers/components/CustomerAuthModal'
 import { useCustomerAuth } from '@/features/customers/hooks/useCustomerAuth'
 import { WhatsAppService } from '@/services/whatsapp.service'
@@ -17,11 +18,32 @@ interface HeaderProps {
 
 export const Header = ({ searchQuery, onSearchChange, onOpenMenu, onGoHome }: HeaderProps) => {
   const { totalItems, openCart } = useCart()
-  const { user, customer, signOut } = useCustomerAuth()
+  const { user, customer, signOut, needsProfile } = useCustomerAuth()
   const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false)
+  const [isAccountOpen, setIsAccountOpen] = useState<boolean>(false)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState<boolean>(false)
+  const userMenuRef = useRef<HTMLDivElement>(null)
   const badgeLabel = totalItems > 99 ? '99+' : String(totalItems)
   const displayName = (customer?.fullName || user?.displayName || '').trim()
   const firstName = displayName.split(/\s+/)[0] ?? ''
+
+  useEffect(() => {
+    if (!isUserMenuOpen) return
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false)
+      }
+    }
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsUserMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isUserMenuOpen])
 
   return (
     <header className="sticky top-0 z-30 border-b border-baruc-gold/25 bg-baruc-green text-white shadow-md">
@@ -108,19 +130,50 @@ export const Header = ({ searchQuery, onSearchChange, onOpenMenu, onGoHome }: He
 
         <div className="flex items-center justify-self-end gap-1.5 sm:gap-2">
           {user ? (
-            <div className="flex items-center gap-1.5 rounded-xl border border-baruc-gold/40 bg-baruc-greenLight/40 px-2 sm:px-3">
-              <UserRound className="h-4 w-4 text-baruc-gold" aria-hidden="true" />
-              <span className="hidden max-w-[110px] truncate text-xs font-semibold text-baruc-gold sm:inline">
-                Olá, {firstName || 'cliente'}
-              </span>
+            <div ref={userMenuRef} className="relative">
               <button
                 type="button"
-                onClick={() => void signOut()}
-                aria-label="Sair da conta"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-baruc-gold transition-colors hover:bg-baruc-greenLight active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold"
+                onClick={() => setIsUserMenuOpen((prev) => !prev)}
+                aria-haspopup="menu"
+                aria-expanded={isUserMenuOpen}
+                className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-baruc-gold/40 bg-baruc-greenLight/40 px-2.5 text-xs font-semibold text-baruc-gold transition-colors hover:bg-baruc-gold hover:text-baruc-green active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold sm:px-3.5 sm:text-sm"
               >
-                <LogOut className="h-4 w-4" aria-hidden="true" />
+                <UserRound className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+                <span className="max-w-[110px] truncate">Olá, {firstName || 'cliente'}</span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
               </button>
+
+              {isUserMenuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-full z-40 mt-2 w-56 overflow-hidden rounded-xl border border-baruc-gold/30 bg-white py-1 shadow-xl"
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setIsAccountOpen(true)
+                      setIsUserMenuOpen(false)
+                    }}
+                    className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-baruc-green hover:bg-baruc-goldLight/60"
+                  >
+                    <UserRound className="h-4 w-4 text-baruc-goldDark" aria-hidden="true" />
+                    Acessar dados da conta
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setIsUserMenuOpen(false)
+                      void signOut()
+                    }}
+                    className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-red-700 hover:bg-red-50"
+                  >
+                    <LogOut className="h-4 w-4" aria-hidden="true" />
+                    Sair
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <button
@@ -153,7 +206,16 @@ export const Header = ({ searchQuery, onSearchChange, onOpenMenu, onGoHome }: He
         </div>
       </div>
 
-      {isAuthOpen && <CustomerAuthModal onClose={() => setIsAuthOpen(false)} />}
+      {(isAuthOpen || needsProfile) && (
+        <CustomerAuthModal
+          key={needsProfile ? 'complete-profile' : 'auth'}
+          onClose={() => setIsAuthOpen(false)}
+        />
+      )}
+
+      {isAccountOpen && user && (
+        <CustomerAccountModal onClose={() => setIsAccountOpen(false)} />
+      )}
     </header>
   )
 }

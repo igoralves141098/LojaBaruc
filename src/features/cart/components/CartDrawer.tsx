@@ -1,10 +1,12 @@
-﻿import { useEffect, useId, useRef, useState } from 'react'
-import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react'
+﻿import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { Loader2, Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react'
 import { useCart } from '@/features/cart/hooks/useCart'
 import type { CartItem } from '@/features/cart/types/cart.types'
 import { getStock } from '@/features/catalog/stock'
 import { useCustomerAuth } from '@/features/customers/hooks/useCustomerAuth'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
+import { createPendingOrder } from '@/features/orders/order.service'
+import type { OrderItem, OrderPaymentMethod, OrderDeliveryMethod } from '@/features/orders/order.types'
 import { WhatsAppService } from '@/services/whatsapp.service'
 import { formatCurrency, formatPrice } from '@/utils/formatters'
 
@@ -25,12 +27,16 @@ interface CartLineProps {
 
 const CartLine = ({ item, canIncrement, maxStock, onIncrement, onDecrement, onRemove }: CartLineProps) => {
   const { product, selectedSize, selectedColor, quantity } = item
+  const name = product?.name ?? 'Produto'
+  const imageUrl = product?.imageUrl || '/placeholder-product.png'
+  const sku = product?.sku ?? '—'
+  const price = typeof product?.price === 'number' ? product.price : null
 
   return (
     <li className="flex gap-3 rounded-2xl border border-neutral-200/80 bg-white p-3 shadow-sm">
       <img
-        src={product.imageUrl}
-        alt={product.name}
+        src={imageUrl}
+        alt={name}
         loading="lazy"
         decoding="async"
         width={96}
@@ -40,12 +46,12 @@ const CartLine = ({ item, canIncrement, maxStock, onIncrement, onDecrement, onRe
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-start justify-between gap-2">
           <h3 className="line-clamp-2 font-serif text-lg font-semibold leading-tight text-baruc-green">
-            {product.name}
+            {name}
           </h3>
           <button
             type="button"
             onClick={onRemove}
-            aria-label={`Remover ${product.name} tamanho ${selectedSize}${selectedColor ? ` cor ${selectedColor}` : ''}`}
+            aria-label={`Remover ${name} tamanho ${selectedSize}${selectedColor ? ` cor ${selectedColor}` : ''}`}
             className="-mr-1 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-600 active:scale-95"
           >
             <Trash2 className="h-4 w-4" aria-hidden="true" />
@@ -53,14 +59,14 @@ const CartLine = ({ item, canIncrement, maxStock, onIncrement, onDecrement, onRe
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-2">
           <span className="rounded-md border border-baruc-gold/40 bg-baruc-goldLight px-2 py-0.5 text-xs font-semibold text-baruc-green">
-            Tam: {selectedSize}
+            Tam: {selectedSize || '—'}
           </span>
           {selectedColor && (
             <span className="rounded-md border border-neutral-200 bg-white px-2 py-0.5 text-xs font-semibold text-neutral-700">
               Cor: {selectedColor}
             </span>
           )}
-          <span className="font-mono text-[10px] text-neutral-400">{product.sku}</span>
+          <span className="font-mono text-[10px] text-neutral-400">{sku}</span>
         </div>
         <div className="mt-auto flex items-end justify-between gap-2 pt-2">
           <div className="flex items-center rounded-xl border border-neutral-200 bg-neutral-50">
@@ -87,10 +93,10 @@ const CartLine = ({ item, canIncrement, maxStock, onIncrement, onDecrement, onRe
           </div>
           <div className="text-right">
             <p className="text-base font-bold text-neutral-900">
-              {product.price === null ? formatPrice(null) : formatCurrency(product.price * quantity)}
+              {price === null ? formatPrice(null) : formatCurrency(price * quantity)}
             </p>
-            {quantity > 1 && product.price !== null && (
-              <p className="text-[11px] text-neutral-400">{formatCurrency(product.price)} cada</p>
+            {quantity > 1 && price !== null && (
+              <p className="text-[11px] text-neutral-400">{formatCurrency(price)} cada</p>
             )}
           </div>
         </div>
@@ -119,10 +125,12 @@ export const CartDrawer = () => {
     hasPriceOnRequest,
   } = useCart()
 
-  const { customer } = useCustomerAuth()
+  const { customer, user } = useCustomerAuth()
   const [customerName, setCustomerName] = useState<string | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('')
   const [deliveryType, setDeliveryType] = useState<DeliveryType | ''>('')
+  const [orderSaving, setOrderSaving] = useState<boolean>(false)
+  const [orderError, setOrderError] = useState<string>('')
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const titleId = useId()
   const nameInputId = useId()
@@ -144,16 +152,73 @@ export const CartDrawer = () => {
     }
   }, [isOpen, closeCart])
 
-  const checkoutUrl = WhatsAppService.generateCartCheckoutUrl({
-    items,
-    subtotal,
-    totalDiscount,
-    totalPrice,
-    hasPriceOnRequest,
-    customerName: effectiveCustomerName,
-    paymentMethod,
-    deliveryType,
-  })
+  const checkoutUrl = useMemo(
+    () =>
+      WhatsAppService.generateCartCheckoutUrl({
+        items,
+        subtotal,
+        totalDiscount,
+        totalPrice,
+        hasPriceOnRequest,
+        customerName: effectiveCustomerName,
+        paymentMethod,
+        deliveryType,
+      }),
+    [items, subtotal, totalDiscount, totalPrice, hasPriceOnRequest, effectiveCustomerName, paymentMethod, deliveryType],
+  )
+
+  const handleCheckout = async () => {
+    setOrderError('')
+    setOrderSaving(true)
+    try {
+      const orderItems: OrderItem[] = items.map((item) => {
+        const unitPrice = typeof item.product?.price === 'number' ? item.product.price : 0
+        const qty = item.quantity
+        const selectedVariant = item.product?.variants?.find((v) => v.colorName === item.selectedColor)
+        return {
+          productId: item.product?.id ?? '',
+          name: item.product?.name ?? 'Produto',
+          sku: item.product?.sku ?? '',
+          colorName: item.selectedColor ?? selectedVariant?.colorName ?? '',
+          colorHex: selectedVariant?.colorHex ?? '',
+          size: item.selectedSize ?? '',
+          quantity: qty,
+          unitPrice,
+          subtotal: unitPrice * qty,
+        }
+      })
+
+      const orderCode = await createPendingOrder({
+        customerId: customer?.uid ?? user?.uid ?? null,
+        customerName: effectiveCustomerName || customer?.fullName || user?.displayName || '',
+        customerEmail: customer?.email ?? user?.email ?? '',
+        customerCpf: customer?.cpf ?? '',
+        customerPhone: customer?.phone ?? '',
+        items: orderItems,
+        totalAmount: totalPrice,
+        paymentMethod: (paymentMethod || 'Combinar') as OrderPaymentMethod,
+        deliveryMethod: (deliveryType || 'Entrega') as OrderDeliveryMethod,
+      })
+
+      const url = WhatsAppService.generateCartCheckoutUrl({
+        items,
+        subtotal,
+        totalDiscount,
+        totalPrice,
+        hasPriceOnRequest,
+        customerName: effectiveCustomerName,
+        paymentMethod,
+        deliveryType,
+        orderShortCode: orderCode,
+      })
+      window.open(url, '_blank', 'noopener,noreferrer')
+    } catch (err) {
+      setOrderError(err instanceof Error ? err.message : 'Não foi possível salvar o pedido.')
+      window.open(checkoutUrl, '_blank', 'noopener,noreferrer')
+    } finally {
+      setOrderSaving(false)
+    }
+  }
 
   const isEmpty = items.length === 0
 
@@ -229,24 +294,25 @@ export const CartDrawer = () => {
               </div>
 
               <ul className="flex flex-col gap-3">
-                {items.map((item) => {
-                  const productTotal = items
-                    .filter((line) => line.product.id === item.product.id)
-                    .reduce((total, line) => total + line.quantity, 0)
-                  const maxStock = getStock(item.product)
+                  {items.map((item) => {
+                    const productId = item.product?.id ?? 'unknown'
+                    const productTotal = items
+                      .filter((line) => line.product?.id === productId)
+                      .reduce((total, line) => total + line.quantity, 0)
+                    const maxStock = item.product ? getStock(item.product) : 99
 
-                  return (
-                    <CartLine
-                      key={`${item.product.id}-${item.selectedSize}-${item.selectedColor ?? ''}`}
-                      item={item}
-                      canIncrement={productTotal < maxStock}
-                      maxStock={maxStock}
-                      onIncrement={() => updateQuantity(item.product.id, item.selectedSize, item.quantity + 1, item.selectedColor)}
-                      onDecrement={() => updateQuantity(item.product.id, item.selectedSize, item.quantity - 1, item.selectedColor)}
-                      onRemove={() => removeItem(item.product.id, item.selectedSize, item.selectedColor)}
-                    />
-                  )
-                })}
+                    return (
+                      <CartLine
+                        key={`${productId}-${item.selectedSize}-${item.selectedColor ?? ''}`}
+                        item={item}
+                        canIncrement={productTotal < maxStock}
+                        maxStock={maxStock}
+                        onIncrement={() => updateQuantity(productId, item.selectedSize, item.quantity + 1, item.selectedColor)}
+                        onDecrement={() => updateQuantity(productId, item.selectedSize, item.quantity - 1, item.selectedColor)}
+                        onRemove={() => removeItem(productId, item.selectedSize, item.selectedColor)}
+                      />
+                    )
+                  })}
               </ul>
 
               <section className="mt-5 flex flex-col gap-4 rounded-2xl border border-baruc-gold/30 bg-white p-4">
@@ -339,23 +405,32 @@ export const CartDrawer = () => {
                   </dd>
                 </div>
               </dl>
+              {orderError && (
+                <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-700">
+                  {orderError}
+                </p>
+              )}
               {hasPriceOnRequest && (
                 <p className="mt-2 text-xs text-neutral-500">
                   Itens a confirmar: o valor final será confirmado pelo WhatsApp.
                 </p>
               )}
 
-              <a
-                href={checkoutUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border border-baruc-gold bg-baruc-green px-4 text-sm font-bold uppercase tracking-wide text-baruc-gold shadow-lg transition-all hover:bg-baruc-greenDark active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold focus-visible:ring-offset-2"
+              <button
+                type="button"
+                onClick={() => void handleCheckout()}
+                disabled={orderSaving}
+                className="mt-4 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border border-baruc-gold bg-baruc-green px-4 text-sm font-bold uppercase tracking-wide text-baruc-gold shadow-lg transition-all hover:bg-baruc-greenDark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-baruc-gold focus-visible:ring-offset-2"
               >
-                <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current" aria-hidden="true">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                </svg>
-                Finalizar Pedido no WhatsApp
-              </a>
+                {orderSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current" aria-hidden="true">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                  </svg>
+                )}
+                <span>Finalizar Pedido no WhatsApp</span>
+              </button>
               <p className="mt-2 text-center text-[11px] text-neutral-400">
                 Você será direcionado ao WhatsApp com o resumo do pedido.
               </p>
